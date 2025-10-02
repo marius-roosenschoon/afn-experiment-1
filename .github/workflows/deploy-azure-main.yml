@@ -41,4 +41,5 @@ jobs:
       run: |
         cd ${{ github.workspace }}
         pwd
-        dir /s
+        Get-ChildItem -Recurse
+
