@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32616.157
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpPostExperiment", "HttpPostExperiment\HttpPostExperiment.csproj", "{3EB058CB-BB8E-4B65-9ECC-5F6EC918AB71}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpPostTriggerTest", "HttpPostTriggerTest\HttpPostTriggerTest.csproj", "{E54D1D84-F9BB-47A2-8110-63E3C32E341D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3EB058CB-BB8E-4B65-9ECC-5F6EC918AB71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3EB058CB-BB8E-4B65-9ECC-5F6EC918AB71}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3EB058CB-BB8E-4B65-9ECC-5F6EC918AB71}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3EB058CB-BB8E-4B65-9ECC-5F6EC918AB71}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E54D1D84-F9BB-47A2-8110-63E3C32E341D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E54D1D84-F9BB-47A2-8110-63E3C32E341D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E54D1D84-F9BB-47A2-8110-63E3C32E341D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E54D1D84-F9BB-47A2-8110-63E3C32E341D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0CA263CF-A137-4DEC-AB06-E0CBF70FFB78}
+	EndGlobalSection
+EndGlobal
