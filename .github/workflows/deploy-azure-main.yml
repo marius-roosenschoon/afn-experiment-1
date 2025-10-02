@@ -10,9 +10,6 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-
     - name: Setup .NET Core 3.1 SDK
       uses: actions/setup-dotnet@v3
       with:
@@ -23,8 +20,17 @@ jobs:
       with:
         dotnet-version: '5.0.x'
 
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: List for checkout
+      run: |
+        cd ${{ github.workspace }}
+        pwd
+        dir /s
+
     - name: Build Project
-      run: dotnet build **/*.csproj --output ${{ github.workspace }}/publish_output --configuration Release
+      run: dotnet build ${{ github.workspace }}/HttpPostExperiment/HttpPostExperiment.csproj --output ${{ github.workspace }}/publish_output --configuration Release
 
     - name: Archive files
       run: |
@@ -37,7 +43,7 @@ jobs:
         name: drop
         path: ${{ github.workspace }}/artifacts/build.zip
 
-    - name: List for build
+    - name: List after build
       run: |
         cd ${{ github.workspace }}
         pwd
