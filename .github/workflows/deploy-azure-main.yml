@@ -1,39 +1,44 @@
-name: Build and Deploy Azure Function App
-'on':
+name: Build Azure Function App
+
+on:
   push:
     branches:
-    - develop
+      - develop
+
 jobs:
   build:
     runs-on: windows-latest
-    env:
-      azureSubscription: 73d50518-783b-41e2-bde5-3d15b97d5360
-      projectName: HttpPostExperiment
-      functionAppName: HttpPostExperiment
-      workingDirectory: '**'
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
+
     - name: Setup .NET Core 3.1 SDK
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: 3.1.x
+        dotnet-version: '3.1.x'
+
     - name: Setup .NET 5 SDK
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: 5.0.x
+        dotnet-version: '5.0.x'
+
     - name: Build Project
-      run: dotnet build ${{ env.workingDirectory }}/*.csproj --output ${{ github.workspace
-        }}/publish_output --configuration Release
+      run: dotnet build **/*.csproj --output ${{ github.workspace }}/publish_output --configuration Release
+
     - name: Archive files
-      run: Compress-Archive -Path ${{ github.workspace }}/publish_output/* -DestinationPath
-        ${{ github.workspace }}/artifact.zip
+      run: |
+        mkdir -p ${{ github.workspace }}/artifacts
+        powershell Compress-Archive -Path ${{ github.workspace }}/publish_output\* -DestinationPath ${{ github.workspace }}/artifacts\build.zip
+
     - name: Upload artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: drop
-        path: ${{ github.workspace }}/artifact.zip
-    - name: List for Build ID
-      run: 'cd ${{ github.workspace }}
+        path: ${{ github.workspace }}/artifacts/build.zip
+
+    - name: List for build
+      run: |
+        cd ${{ github.workspace }}
         pwd
-        dir /s'
+        dir /s
