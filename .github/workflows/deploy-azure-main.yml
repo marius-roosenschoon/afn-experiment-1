@@ -29,6 +29,12 @@ jobs:
         mkdir -p ${{ github.workspace }}/artifacts
         powershell Compress-Archive -Path ${{ github.workspace }}/publish_output\* -DestinationPath ${{ github.workspace }}/artifacts\build.zip
 
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: drop
+        path: ${{ github.workspace }}/artifacts/build.zip
+
     - name: Create GitHub Release
       id: create_release
       uses: softprops/action-gh-release@v1
