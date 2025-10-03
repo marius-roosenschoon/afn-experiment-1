@@ -18,6 +18,9 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
+    - name: Run Unit Tests
+      run: dotnet test ${{ github.workspace }}/HttpPostExperiment.Tests/HttpPostExperiment.Tests.csproj --configuration Release
+
     - name: Build Project
       run: dotnet build ${{ github.workspace }}/HttpPostExperiment/HttpPostExperiment.csproj --output ${{ github.workspace }}/publish_output --configuration Release
 
