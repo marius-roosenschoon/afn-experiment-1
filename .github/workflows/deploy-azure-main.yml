@@ -48,6 +48,15 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+    - name: Verify drop.zip exists
+      run: |
+        if (Test-Path "${{ github.workspace }}\release\drop.zip") {
+          Write-Host "drop.zip exists"
+        } else {
+          Write-Host "drop.zip is missing"
+          exit 1
+        }
+
     - name: Upload Release Asset
       uses: softprops/action-gh-release@v1
       with:
