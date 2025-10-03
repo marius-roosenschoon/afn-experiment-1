@@ -27,13 +27,15 @@ jobs:
     - name: Archive files
       run: |
         mkdir -p ${{ github.workspace }}/artifacts
-        powershell Compress-Archive -Path ${{ github.workspace }}/publish_output\* -DestinationPath ${{ github.workspace }}/artifacts\build.zip
+        powershell Compress-Archive -Path ${{ github.workspace }}/publish_output\* -DestinationPath ${{ github.workspace }}/artifacts\drop.zip
+        mkdir -p ${{ github.workspace }}/release
+        Copy-Item ${{ github.workspace }}/artifacts\drop.zip -Destination ${{ github.workspace }}/release\drop.zip
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: drop
-        path: ${{ github.workspace }}/artifacts/build.zip
+        path: ${{ github.workspace }}/release/drop.zip
 
     - name: Create GitHub Release
       id: create_release
@@ -49,7 +51,7 @@ jobs:
     - name: Upload Release Asset
       uses: softprops/action-gh-release@v1
       with:
-        files: ${{ github.workspace }}/artifacts/build.zip
+        files: ${{ github.workspace }}/release/drop.zip
         tag_name: v${{ github.run_number }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
