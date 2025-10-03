@@ -1,4 +1,4 @@
-name: Build Azure Function App
+name: Build and Release Azure Function App
 
 on:
   push:
@@ -29,15 +29,27 @@ jobs:
         mkdir -p ${{ github.workspace }}/artifacts
         powershell Compress-Archive -Path ${{ github.workspace }}/publish_output\* -DestinationPath ${{ github.workspace }}/artifacts\build.zip
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
+    - name: Create GitHub Release
+      id: create_release
+      uses: softprops/action-gh-release@v1
       with:
-        name: drop
-        path: ${{ github.workspace }}/artifacts/build.zip
+        tag_name: v${{ github.run_number }}
+        name: Release v${{ github.run_number }}
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload Release Asset
+      uses: softprops/action-gh-release@v1
+      with:
+        files: ${{ github.workspace }}/artifacts/build.zip
+        tag_name: v${{ github.run_number }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: List after build
       run: |
         cd ${{ github.workspace }}
         pwd
         Get-ChildItem -Recurse
-
