@@ -46,8 +46,29 @@ jobs:
           exit 1
         }
 
-    - name: List after build
+    - name: Install Azure CLI
+      uses: azure/setup-cli@v1
+
+    - name: Login to Azure DevOps
       run: |
-        cd ${{ github.workspace }}
-        pwd
-        Get-ChildItem -Recurse
+        echo ${{ secrets.AZURE_DEVOPS_PAT }} | az devops login
+      env:
+        AZURE_DEVOPS_PAT: ${{ secrets.AZURE_DEVOPS_PAT }}
+
+    - name: Publish drop.zip to Azure Artifacts
+      run: |
+        az artifacts universal publish \
+          --organization https://dev.azure.com/MariusRoosenschoon \
+          --project "Sandpit" \
+          --scope project \
+          --feed My-GitHub-Feed \
+          --name drop \
+          --version 1.0.${{ github.run_number }} \
+          --description "Function App deployment artifact" \
+          --path ${{ github.workspace }}/release
+
+        - name: List after build
+          run: |
+            cd ${{ github.workspace }}
+            pwd
+            Get-ChildItem -Recurse
