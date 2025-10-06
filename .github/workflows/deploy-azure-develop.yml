@@ -19,30 +19,30 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Run Unit Tests
-      run: dotnet test ${{ github.workspace }}/HttpTriggerPostExperimentTests/HttpTriggerPostExperimentTests.csproj --configuration Release
+      run: dotnet test ${{ github.workspace }}/${{ vars.FUNCTION_TEST_PROJECT }} --configuration Release
 
     - name: Build Project
-      run: dotnet build ${{ github.workspace }}/HttpPostExperiment/HttpPostExperiment.csproj --output ${{ github.workspace }}/publish_output --configuration Release
+      run: dotnet build ${{ github.workspace }}/${{ vars.FUNCTION_PROJECT }} --output ${{ github.workspace }}/publish_output --configuration Release
 
     - name: Archive files
       run: |
         mkdir -p ${{ github.workspace }}/artifacts
-        powershell Compress-Archive -Path ${{ github.workspace }}/publish_output\* -DestinationPath ${{ github.workspace }}/artifacts\drop.zip
+        powershell Compress-Archive -Path ${{ github.workspace }}/publish_output\* -DestinationPath ${{ github.workspace }}/artifacts\${{ vars.ARTIFACT_NAME }}.zip
         mkdir -p ${{ github.workspace }}/release
-        Copy-Item -Path ${{ github.workspace }}/artifacts\drop.zip -Destination ${{ github.workspace }}/release\drop.zip
+        Copy-Item -Path ${{ github.workspace }}/artifacts\${{ vars.ARTIFACT_NAME }}.zip -Destination ${{ github.workspace }}/release\${{ vars.ARTIFACT_NAME }}.zip
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: drop
-        path: ${{ github.workspace }}/release/drop.zip
+        name: ${{ vars.ARTIFACT_NAME }}
+        path: ${{ github.workspace }}/release/${{ vars.ARTIFACT_NAME }}.zip
 
     - name: Verify drop.zip exists
       run: |
-        if (Test-Path "${{ github.workspace }}\release\drop.zip") {
-          Write-Host "drop.zip exists"
+        if (Test-Path "${{ github.workspace }}\release\${{ vars.ARTIFACT_NAME }}.zip") {
+          Write-Host "${{ vars.ARTIFACT_NAME }}.zip exists"
         } else {
-          Write-Host "drop.zip is missing"
+          Write-Host "${{ vars.ARTIFACT_NAME }}.zip is missing"
           exit 1
         }
 
@@ -63,11 +63,11 @@ jobs:
     - name: Publish drop.zip to Azure Artifacts
       run: |
         az artifacts universal publish `
-          --organization https://dev.azure.com/MariusRoosenschoon `
-          --project "Sandpit" `
+          --organization ${{ vars.AZURE_ORGANIZATION_URL }} `
+          --project "${{ vars.AZURE_PROJECT_NAME }}" `
           --scope project `
-          --feed My-GitHub-Feed `
-          --name drop `
+          --feed ${{ vars.AZURE_FEED_NAME }} `
+          --name ${{ vars.ARTIFACT_NAME }} `
           --version 1.0.${{ github.run_number }} `
           --description "Function App deployment artifact" `
           --path ${{ github.workspace }}/release
