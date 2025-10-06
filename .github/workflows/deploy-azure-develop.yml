@@ -26,23 +26,23 @@ jobs:
 
     - name: Archive files
       run: |
-        mkdir -p ${{ github.workspace }}/artifacts
-        powershell Compress-Archive -Path ${{ github.workspace }}/publish_output\* -DestinationPath ${{ github.workspace }}/artifacts\${{ vars.ARTIFACT_NAME }}.zip
-        mkdir -p ${{ github.workspace }}/release
-        Copy-Item -Path ${{ github.workspace }}/artifacts\${{ vars.ARTIFACT_NAME }}.zip -Destination ${{ github.workspace }}/release\${{ vars.ARTIFACT_NAME }}.zip
+        mkdir -p ${{ github.workspace }}/artifacts/${{ vars.ARTIFACT_TYPE }}
+        powershell Compress-Archive -Path ${{ github.workspace }}/publish_output\* -DestinationPath ${{ github.workspace }}/artifacts\${{ vars.ARTIFACT_TYPE }}\${{ vars.ARTIFACT_NAME }}.zip
+        mkdir -p ${{ github.workspace }}/release/${{ vars.ARTIFACT_TYPE }}
+        Copy-Item -Path ${{ github.workspace }}/artifacts\${{ vars.ARTIFACT_TYPE }}\${{ vars.ARTIFACT_NAME }}.zip -Destination ${{ github.workspace }}/release\${{ vars.ARTIFACT_TYPE }}\${{ vars.ARTIFACT_NAME }}.zip
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: ${{ vars.ARTIFACT_NAME }}
-        path: ${{ github.workspace }}/release/${{ vars.ARTIFACT_NAME }}.zip
+        path: ${{ github.workspace }}/release/${{ vars.ARTIFACT_TYPE }}/${{ vars.ARTIFACT_NAME }}.zip
 
     - name: Verify drop.zip exists
       run: |
-        if (Test-Path "${{ github.workspace }}\release\${{ vars.ARTIFACT_NAME }}.zip") {
-          Write-Host "${{ vars.ARTIFACT_NAME }}.zip exists"
+        if (Test-Path "${{ github.workspace }}\release\${{ vars.ARTIFACT_TYPE }}\${{ vars.ARTIFACT_NAME }}.zip") {
+          Write-Host "${{ vars.ARTIFACT_NAME }}.zip exists in folder ${{ vars.ARTIFACT_TYPE }}"
         } else {
-          Write-Host "${{ vars.ARTIFACT_NAME }}.zip is missing"
+          Write-Host "${{ vars.ARTIFACT_NAME }}.zip is missing in folder ${{ vars.ARTIFACT_TYPE }}"
           exit 1
         }
 
@@ -70,7 +70,7 @@ jobs:
           --name ${{ vars.ARTIFACT_NAME }}-1.0.${{ github.run_number }} `
           --version 1.0.${{ github.run_number }} `
           --description "Function App deployment artifact" `
-          --path ${{ github.workspace }}/release
+          --path ${{ github.workspace }}/release/${{ vars.ARTIFACT_TYPE }}
 
     - name: List after build
       run: |
