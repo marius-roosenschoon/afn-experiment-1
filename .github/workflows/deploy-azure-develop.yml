@@ -37,17 +37,6 @@ jobs:
         name: drop
         path: ${{ github.workspace }}/release/drop.zip
 
-    - name: Create GitHub Release
-      id: create_release
-      uses: softprops/action-gh-release@v1
-      with:
-        tag_name: v${{ github.run_number }}
-        name: Release v${{ github.run_number }}
-        draft: false
-        prerelease: false
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
     - name: Verify drop.zip exists
       run: |
         if (Test-Path "${{ github.workspace }}\release\drop.zip") {
@@ -56,14 +45,6 @@ jobs:
           Write-Host "drop.zip is missing"
           exit 1
         }
-
-    - name: Upload Release Asset
-      uses: softprops/action-gh-release@v1
-      with:
-        files: ${{ github.workspace }}\release\drop.zip
-        tag_name: v${{ github.run_number }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: List after build
       run: |
