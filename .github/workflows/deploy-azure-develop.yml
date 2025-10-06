@@ -67,7 +67,7 @@ jobs:
           --project "${{ vars.AZURE_PROJECT_NAME }}" `
           --scope project `
           --feed ${{ vars.AZURE_FEED_NAME }} `
-          --name ${{ vars.ARTIFACT_NAME }} `
+          --name ${{ vars.ARTIFACT_NAME }}-1.0.${{ github.run_number }} `
           --version 1.0.${{ github.run_number }} `
           --description "Function App deployment artifact" `
           --path ${{ github.workspace }}/release
