@@ -1,0 +1,24 @@
+name: .NET
+
+on:
+  push:           # Run on push to any branch
+  pull_request:   # Run on PR to any branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 9.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore
+    - name: Install Playwright Browsers
+      run: pwsh tests/Unified-IoT.Web.App.Tests/bin/Debug/net9.0/playwright.ps1 install --with-deps
+    - name: Test
+      run: dotnet test --no-build --verbosity normal
