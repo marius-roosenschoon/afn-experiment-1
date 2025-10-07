@@ -3,7 +3,7 @@ name: Build Azure Function App and Drop Artifact
 on:
   push:
     branches:
-      - main
+      - develop
 
 jobs:
   build:
@@ -78,8 +78,8 @@ jobs:
           --description "Function App deployment artifact" `
           --path ${{ github.workspace }}/release
 
-#    - name: List after build
-#      run: |
-#        cd ${{ github.workspace }}
-#        pwd
-#        Get-ChildItem -Recurse
+    - name: List after build
+      run: |
+        cd ${{ github.workspace }}
+        pwd
+        Get-ChildItem -Recurse
