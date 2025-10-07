@@ -1,4 +1,4 @@
-name: Build and Release Azure Function App
+name: Build Azure Function App and Drop Artifact
 
 on:
   push:
@@ -18,9 +18,6 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Build Project
-      run: dotnet build ${{ github.workspace }}/${{ vars.FUNCTION_PROJECT }} --output ${{ github.workspace }}/publish_output --configuration Release
-
     - name: Run Unit Tests
       run: dotnet test ${{ github.workspace }}/${{ vars.FUNCTION_TEST_PROJECT }} --configuration Release
 
@@ -30,19 +27,23 @@ jobs:
 #    - name: Test
 #      run: dotnet test --no-build --verbosity normal
 
+    - name: Build Project
+      run: dotnet build ${{ github.workspace }}/${{ vars.FUNCTION_PROJECT }} --output ${{ github.workspace }}/publish_output --configuration Release
+
     - name: Archive files
       run: |
         mkdir -p ${{ github.workspace }}/artifacts
         powershell Compress-Archive -Path ${{ github.workspace }}/publish_output\* -DestinationPath ${{ github.workspace }}/artifacts\${{ vars.ARTIFACT_NAME }}.zip
         mkdir -p ${{ github.workspace }}/release
         Copy-Item -Path ${{ github.workspace }}/artifacts\${{ vars.ARTIFACT_NAME }}.zip -Destination ${{ github.workspace }}/release\${{ vars.ARTIFACT_NAME }}.zip
+
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: ${{ vars.ARTIFACT_NAME }}
         path: ${{ github.workspace }}/release/${{ vars.ARTIFACT_NAME }}.zip
 
-    - name: Verify drop.zip exists
+    - name: Verify artifact zip exists
       run: |
         if (Test-Path "${{ github.workspace }}\release\${{ vars.ARTIFACT_NAME }}.zip") {
           Write-Host "${{ vars.ARTIFACT_NAME }}.zip exists"
@@ -50,10 +51,12 @@ jobs:
           Write-Host "${{ vars.ARTIFACT_NAME }}.zip is missing"
           exit 1
         }
+
     - name: Install Azure CLI
       run: |
         Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile .\AzureCLI.msi
         Start-Process msiexec.exe -Wait -ArgumentList '/I AzureCLI.msi /quiet'
+
     - name: Verify Azure CLI
       run: az --version
 
@@ -63,7 +66,7 @@ jobs:
       env:
         AZURE_DEVOPS_PAT: ${{ secrets.AZURE_DEVOPS_PAT }}
 
-    - name: Publish drop.zip to Azure Artifacts
+    - name: Publish artifact zip to Azure Artifacts
       run: |
         az artifacts universal publish `
           --organization ${{ vars.AZURE_ORGANIZATION_URL }} `
@@ -74,6 +77,7 @@ jobs:
           --version 1.0.${{ github.run_number }} `
           --description "Function App deployment artifact" `
           --path ${{ github.workspace }}/release
+
     - name: List after build
       run: |
         cd ${{ github.workspace }}
