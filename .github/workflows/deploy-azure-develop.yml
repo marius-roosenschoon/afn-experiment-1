@@ -70,7 +70,7 @@ jobs:
 #      env:
 #        AZURE_DEVOPS_PAT: ${{ secrets.AZURE_DEVOPS_PAT }}
 
-    # Note the OIDC Claims for Azure must be customised for this job
+#   Note the OIDC Claims for Azure must be customised for this job
     - name: Login to Azure using Service Principal
       uses: azure/login@v1
       with:
@@ -78,16 +78,16 @@ jobs:
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Obtain temporary Azure DevOps PAT
-        id: get_pat
-        run: |
-          $pat = az devops personal-access-token create --organization ${{ vars.AZURE_ORGANIZATION_URL }} --scope "vso.packaging_write vso.packaging_read" --output tsv --query patToken
-          echo "::add-mask::$pat"
-          echo "pat=$pat" >> $env:GITHUB_ENV
-        env:
-          AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
+    - name: Obtain temporary Azure DevOps PAT
+      id: get_pat
+      run: |
+        $pat = az devops personal-access-token create --organization ${{ vars.AZURE_ORGANIZATION_URL }} --scope "vso.packaging_write vso.packaging_read" --output tsv --query patToken
+        echo "::add-mask::$pat"
+        echo "pat=$pat" >> $env:GITHUB_ENV
+      env:
+        AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
 
-    # Note the SPN must be added to the users in DevOps for this job
+#   Note the SPN must be added to the users in DevOps for this job
     - name: Publish artifact zip to Azure Artifacts
       run: |
         az artifacts universal publish `
