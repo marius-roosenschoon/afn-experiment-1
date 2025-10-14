@@ -70,6 +70,7 @@ jobs:
 #      env:
 #        AZURE_DEVOPS_PAT: ${{ secrets.AZURE_DEVOPS_PAT }}
 
+    # Note the OIDC Claims for Azure must be customised for this job
     - name: Login to Azure using Service Principal
       uses: azure/login@v1
       with:
@@ -77,6 +78,7 @@ jobs:
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
+    # Note the SPN must be added to the users in DevOps for this job
     - name: Publish artifact zip to Azure Artifacts
       run: |
         az artifacts universal publish `
