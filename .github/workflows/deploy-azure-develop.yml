@@ -78,6 +78,15 @@ jobs:
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
+      - name: Obtain temporary Azure DevOps PAT
+        id: get_pat
+        run: |
+          $pat = az devops personal-access-token create --organization ${{ vars.AZURE_ORGANIZATION_URL }} --scope "vso.packaging_write vso.packaging_read" --output tsv --query patToken
+          echo "::add-mask::$pat"
+          echo "pat=$pat" >> $env:GITHUB_ENV
+        env:
+          AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
+
     # Note the SPN must be added to the users in DevOps for this job
     - name: Publish artifact zip to Azure Artifacts
       run: |
@@ -90,6 +99,8 @@ jobs:
           --version 1.0.${{ github.run_number }} `
           --description "Function App deployment artifact" `
           --path ${{ github.workspace }}/release
+      env:
+        AZURE_DEVOPS_EXT_PAT: ${{ env.pat }}
 
     - name: List after build
       run: |
