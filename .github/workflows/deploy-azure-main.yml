@@ -70,8 +70,8 @@ jobs:
 #      env:
 #        AZURE_DEVOPS_PAT: ${{ secrets.AZURE_DEVOPS_PAT }}
 
-    # Note the OIDC Claims for Azure must be customised for this job
-    - name: Login to Azure using Service Principal
+#   Note the OIDC Claims for Azure must be customised for this job
+    - name: Login to Azure using Service Principal via OIDC
       uses: azure/login@v1
       with:
         client-id: ${{ secrets.AZURE_CLIENT_ID }}
@@ -94,5 +94,5 @@ jobs:
 #    - name: List after build
 #      run: |
 #        cd ${{ github.workspace }}
-#        pwd
+#        Get-Location
 #        Get-ChildItem -Recurse

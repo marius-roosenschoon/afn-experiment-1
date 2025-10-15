@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
     - name: Setup .NET 8 SDK
@@ -37,9 +37,9 @@ jobs:
     - name: Archive files
       run: |
         mkdir -p ${{ github.workspace }}/artifacts
-        zip -r ${{ github.workspace }}/artifacts/${{ vars.ARTIFACT_NAME }}.zip ${{ github.workspace }}/publish_output
+        powershell Compress-Archive -Path ${{ github.workspace }}/publish_output\* -DestinationPath ${{ github.workspace }}/artifacts\${{ vars.ARTIFACT_NAME }}.zip
         mkdir -p ${{ github.workspace }}/release
-        cp ${{ github.workspace }}/artifacts/${{ vars.ARTIFACT_NAME }}.zip ${{ github.workspace }}/release/${{ vars.ARTIFACT_NAME }}.zip
+        Copy-Item -Path ${{ github.workspace }}/artifacts\${{ vars.ARTIFACT_NAME }}.zip -Destination ${{ github.workspace }}/release\${{ vars.ARTIFACT_NAME }}.zip
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
@@ -49,16 +49,17 @@ jobs:
 
     - name: Verify artifact zip exists
       run: |
-        if [ -f "${{ github.workspace }}/release/${{ vars.ARTIFACT_NAME }}.zip" ]; then
-          echo "${{ vars.ARTIFACT_NAME }}.zip exists"
-        else
-          echo "${{ vars.ARTIFACT_NAME }}.zip is missing"
+        if (Test-Path "${{ github.workspace }}\release\${{ vars.ARTIFACT_NAME }}.zip") {
+          Write-Host "${{ vars.ARTIFACT_NAME }}.zip exists"
+        } else {
+          Write-Host "${{ vars.ARTIFACT_NAME }}.zip is missing"
           exit 1
-        fi
+        }
 
     - name: Install Azure CLI
       run: |
-        curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+        Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile .\AzureCLI.msi
+        Start-Process msiexec.exe -Wait -ArgumentList '/I AzureCLI.msi /quiet'
 
     - name: Verify Azure CLI
       run: az --version
@@ -80,55 +81,47 @@ jobs:
     - name: Get AAD access token for Azure DevOps resource
       id: aad
       run: |
-        # Azure DevOps AAD resource/app id
-        ADO_APP_ID=74cb16bd-a453-441e-87e3-061290c95f59
-        AAD_TOKEN=$(az account get-access-token --resource $ADO_APP_ID --query accessToken -o tsv)
-        echo "token=$AAD_TOKEN" >> $GITHUB_OUTPUT
+        $ADO_APP_ID = "74cb16bd-a453-441e-87e3-061290c95f59"
+        $AAD_TOKEN = az account get-access-token --resource $ADO_APP_ID --query accessToken -o tsv
+        echo "token=$AAD_TOKEN" | Out-File -Append $env:GITHUB_OUTPUT
 
     - name: Create short-lived PAT (Packaging write)
       id: pat
       run: |
-        EXPIRY=$(date -u -d "+1 hour" +"%Y-%m-%dT%H:%M:%SZ")
-        BODY=$(jq -n \
-          --arg dn "gha-${{ github.run_id }}" \
-          --arg sc "vso.packaging_write" \
-          --arg vt "$EXPIRY" \
-          '{displayName:$dn, scope:$sc, validTo:$vt, allOrgs:false}')
-        PAT_JSON=$(curl -sS -X POST \
-          -H "Content-Type: application/json" \
-          -H "Authorization: Bearer ${{ steps.aad.outputs.token }}" \
-          "https://vssps.dev.azure.com/${{ vars.ORG }}/_apis/tokens/pats?api-version=7.1-preview.1" \
-          -d "$BODY")
-        PAT=$(echo "$PAT_JSON" | jq -r '.patToken.token')
-        if [ -z "$PAT" ] || [ "$PAT" = "null" ]; then
-          echo "Failed to mint PAT"; echo "$PAT_JSON"; exit 1
-        fi
-        echo "::add-mask::$PAT"
-        echo "value=$PAT" >> $GITHUB_OUTPUT
+        $EXPIRY = (Get-Date).ToUniversalTime().AddHours(1).ToString("yyyy-MM-ddTHH:mm:ssZ")
+        $BODY = @{ displayName = "gha-${{ github.run_id }}"; scope = "vso.packaging_write"; validTo = $EXPIRY; allOrgs = $false } | ConvertTo-Json
+        $PAT_JSON = Invoke-RestMethod -Method Post -Uri "https://vssps.dev.azure.com/${{ vars.ORG }}/_apis/tokens/pats?api-version=7.1-preview.1" -Headers @{ "Content-Type" = "application/json"; "Authorization" = "Bearer ${{ steps.aad.outputs.token }}" } -Body $BODY
+        $PAT = $PAT_JSON.patToken.token
+        if ([string]::IsNullOrEmpty($PAT)) {
+          Write-Host "Failed to mint PAT"; Write-Host $PAT_JSON; exit 1
+        }
+        Write-Host "::add-mask::$PAT"
+        echo "value=$PAT" | Out-File -Append $env:GITHUB_OUTPUT
 
     - name: Install Azure DevOps CLI extension
       run: |
-        az extension add --name azure-devops || az extension update --name azure-devops
+        az extension add --name azure-devops
+        az extension update --name azure-devops
 
     - name: Login az devops with temp PAT
       run: |
-        echo "${{ steps.pat.outputs.value }}" | az devops login --organization "https://dev.azure.com/${{ vars.ORG }}"
+        az devops login --organization "https://dev.azure.com/${{ vars.ORG }}" --token "${{ steps.pat.outputs.value }}"
 
 #   Note the SPN must be added to the users in DevOps for this job
     - name: Publish artifact zip to Azure Artifacts
       run: |
-        az artifacts universal publish \
-          --organization ${{ vars.AZURE_ORGANIZATION_URL }} \
-          --project "${{ vars.AZURE_PROJECT_NAME }}" \
-          --scope project \
-          --feed ${{ vars.AZURE_FEED_NAME }} \
-          --name ${{ vars.ARTIFACT_NAME }} \
-          --version 1.0.${{ github.run_number }} \
-          --description "Function App deployment artifact" \
+        az artifacts universal publish `
+          --organization ${{ vars.AZURE_ORGANIZATION_URL }} `
+          --project "${{ vars.AZURE_PROJECT_NAME }}" `
+          --scope project `
+          --feed ${{ vars.AZURE_FEED_NAME }} `
+          --name ${{ vars.ARTIFACT_NAME }} `
+          --version 1.0.${{ github.run_number }} `
+          --description "Function App deployment artifact" `
           --path ${{ github.workspace }}/release
 
     - name: List after build
       run: |
         cd ${{ github.workspace }}
-        pwd
-        find .
+        Get-Location
+        Get-ChildItem -Recurse
