@@ -82,7 +82,7 @@ jobs:
       id: aad
       run: |
         # Azure DevOps AAD resource/app id
-        ADO_APP_ID=499b84ac-1321-427f-aa17-267ca6975798
+        ADO_APP_ID=74cb16bd-a453-441e-87e3-061290c95f59
         AAD_TOKEN=$(az account get-access-token --resource $ADO_APP_ID --query accessToken -o tsv)
         echo "token=$AAD_TOKEN" >> $GITHUB_OUTPUT
 
