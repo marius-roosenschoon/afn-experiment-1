@@ -42,7 +42,7 @@ jobs:
     - name: Make sample payload
       run: |
         mkdir -p "$PACKAGE_PATH"
-        echo "hello" > ${{ github.workspace }}/publish_output/hello.txt"
+        echo "hello" > "${{ github.workspace }}/publish_output/hello.txt"
 
     - name: Archive files
       run: |
