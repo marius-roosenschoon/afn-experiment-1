@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
     - name: Setup .NET 8 SDK
@@ -127,11 +127,4 @@ jobs:
           --version 1.0.${{ github.run_number }} `
           --description "Function App deployment artifact" `
           --path ${{ github.workspace }}/release
-      env:
-        AZURE_DEVOPS_EXT_PAT: ${{ env.pat }}
 
-    - name: List after build
-      run: |
-        cd ${{ github.workspace }}
-        pwd
-        Get-ChildItem -Recurse
