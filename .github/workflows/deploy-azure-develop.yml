@@ -6,8 +6,12 @@ on:
       - develop
 
 permissions:
-  id-token: write
+  id-token: write   # needed for OIDC to Entra ID
   contents: read
+  
+env:
+  ORG: ${{ vars.ORG }}
+  SCOPE: vso.packaging_write
 
 jobs:
   build:
@@ -64,51 +68,60 @@ jobs:
     - name: Verify Azure CLI
       run: az --version
 
-#    - name: Login to Azure DevOps
-#      run: |
-#        echo ${{ secrets.AZURE_DEVOPS_PAT }} | az devops login
-#      env:
-#        AZURE_DEVOPS_PAT: ${{ secrets.AZURE_DEVOPS_PAT }}
-
 #   Note the OIDC Claims for Azure must be customised for this job
     - name: Login to Azure using Service Principal via OIDC
-      uses: azure/login@v1
+      uses: azure/login@v2
       with:
         client-id: ${{ secrets.AZURE_CLIENT_ID }}
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-    - name: Get AAD access token for Azure DevOps resource
+    - name: Get AAD access token for Azure DevOps
       id: aad
+      shell: pwsh
       run: |
-        $ADO_APP_ID = "74cb16bd-a453-441e-87e3-061290c95f59"
-        $AAD_TOKEN = az account get-access-token --resource $ADO_APP_ID --query accessToken -o tsv
-        echo "token=$AAD_TOKEN" | Out-File -Append $env:GITHUB_OUTPUT
+        $ADO_APP_ID = ${{ secrets.AZURE_CLIENT_ID }}
+        $token = az account get-access-token --resource $ADO_APP_ID --query accessToken -o tsv
+        echo "token=$token" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
-    - name: Create short-lived PAT (Packaging write)
+    - name: Create short-lived PAT
       id: pat
+      shell: pwsh
       run: |
-        $EXPIRY = (Get-Date).ToUniversalTime().AddHours(1).ToString("yyyy-MM-ddTHH:mm:ssZ")
-        $BODY = @{ displayName = "gha-${{ github.run_id }}"; scope = "vso.packaging_write"; validTo = $EXPIRY; allOrgs = $false } | ConvertTo-Json
-        $PAT_JSON = Invoke-RestMethod -Method Post -Uri "https://vssps.dev.azure.com/${{ vars.ORG }}/_apis/tokens/pats?api-version=7.1-preview.1" -Headers @{ "Content-Type" = "application/json"; "Authorization" = "Bearer ${{ steps.aad.outputs.token }}" } -Body $BODY
-        $PAT = $PAT_JSON.patToken.token
-        if ([string]::IsNullOrEmpty($PAT)) {
-          Write-Host "Failed to mint PAT"; Write-Host $PAT_JSON; exit 1
+        $expiry = (Get-Date).ToUniversalTime().AddHours(1).ToString("yyyy-MM-ddTHH:mm:ssZ")
+        $body = @{
+            displayName = "gha-${{ github.run_id }}"
+            scope       = $env:SCOPE
+            validTo     = $expiry
+            allOrgs     = $false
+        } | ConvertTo-Json -Compress
+       $url = "https://vssps.dev.azure.com/$env:ORG/_apis/tokens/pats?api-version=7.1-preview.1"
+        $headers = @{
+            "Authorization" = "Bearer ${{ steps.aad.outputs.token }}"
+            "Content-Type"  = "application/json"
+            "X-TFS-FedAuthRedirect" = "Suppress"
         }
-        Write-Host "::add-mask::$PAT"
-        echo "value=$PAT" | Out-File -Append $env:GITHUB_OUTPUT
+       $resp = Invoke-RestMethod -Method Post -Uri $url -Headers $headers -Body $body
+        $pat = $resp.patToken.token
+        if (-not $pat) {
+            Write-Error "PAT creation failed. Full response:`n$($resp | ConvertTo-Json -Depth 5)"
+        }
+       Write-Output "::add-mask::$pat"
+        echo "value=$pat" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
     - name: Install Azure DevOps CLI extension
       run: |
-        az extension add --name azure-devops
-        az extension update --name azure-devops
+        az extension add --name azure-devops || az extension update --name azure-devops
 
-    - name: Login az devops with temp PAT
+    - name: Login to Azure DevOps with temporary PAT
+      shell: pwsh
       run: |
-        az devops login --organization "https://dev.azure.com/${{ vars.ORG }}" --token "${{ steps.pat.outputs.value }}"
+        $pat = "${{ steps.pat.outputs.value }}"
+        $pat | az devops login --organization "https://dev.azure.com/$env:ORG"
 
 #   Note the SPN must be added to the users in DevOps for this job
-    - name: Publish artifact zip to Azure Artifacts
+    - name: Publish Universal Package to Azure Artifacts
+      shell: pwsh
       run: |
         az artifacts universal publish `
           --organization ${{ vars.AZURE_ORGANIZATION_URL }} `
