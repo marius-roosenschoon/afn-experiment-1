@@ -68,11 +68,21 @@ jobs:
 
     - name: Install Azure CLI
       run: |
-        Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile .\AzureCLI.msi
-        Start-Process msiexec.exe -Wait -ArgumentList '/I AzureCLI.msi /quiet'
+          if (-not (Get-Command az -ErrorAction SilentlyContinue)) {
+            Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile .\AzureCLI.msi
+            Start-Process msiexec.exe -Wait -ArgumentList '/I AzureCLI.msi /quiet'
+          } else {
+            Write-Host "Azure CLI already installed."
+          }
 
     - name: Verify Azure CLI
       run: az --version
+
+    - name: Login to Azure DevOps
+      run: |
+        echo ${{ secrets.AZURE_DEVOPS_PAT }} | az devops login
+      env:
+        AZURE_DEVOPS_PAT: ${{ secrets.AZURE_DEVOPS_PAT }}
 
 #   Note the OIDC Claims for Azure must be customised for this job
     - name: Login to Azure using Service Principal via OIDC
@@ -82,51 +92,8 @@ jobs:
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-    - name: Get AAD access token for Azure DevOps
-      id: aad
-      shell: pwsh
-      run: |
-        $token = az account get-access-token --query accessToken -o tsv
-        echo "token=$token" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-
-    - name: Create short-lived PAT
-      id: pat
-      shell: pwsh
-      run: |
-        $expiry = (Get-Date).ToUniversalTime().AddHours(1).ToString("yyyy-MM-ddTHH:mm:ssZ")
-        $body = @{
-            displayName = "gha-${{ github.run_id }}"
-            scope       = $env:SCOPE
-            validTo     = $expiry
-            allOrgs     = $false
-        } | ConvertTo-Json -Compress
-        $url = "https://vssps.dev.azure.com/$env:ORG/_apis/tokens/pats?api-version=7.1-preview.1"
-        $headers = @{
-            "Authorization" = "Bearer ${{ steps.aad.outputs.token }}"
-            "Content-Type"  = "application/json"
-            "X-TFS-FedAuthRedirect" = "Suppress"
-        }
-        $resp = Invoke-RestMethod -Method Post -Uri $url -Headers $headers -Body $body
-        $pat = $resp.patToken.token
-        if (-not $pat) {
-            Write-Error "PAT creation failed. Full response:`n$($resp | ConvertTo-Json -Depth 5)"
-        }
-        Write-Output "::add-mask::$pat"
-        echo "value=$pat" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-
-    - name: Install Azure DevOps CLI extension
-      run: |
-        az extension add --name azure-devops || az extension update --name azure-devops
-
-    - name: Login to Azure DevOps with temporary PAT
-      shell: pwsh
-      run: |
-        $pat = "${{ steps.pat.outputs.value }}"
-        $pat | az devops login --organization "https://dev.azure.com/$env:ORG"
-
-#   Note the SPN must be added to the users in DevOps for this job
-    - name: Publish Universal Package to Azure Artifacts
-      shell: pwsh
+    # Note the SPN must be added to the users in DevOps for this job
+    - name: Publish artifact zip to Azure Artifacts
       run: |
         az artifacts universal publish `
           --organization ${{ vars.AZURE_ORGANIZATION_URL }} `
