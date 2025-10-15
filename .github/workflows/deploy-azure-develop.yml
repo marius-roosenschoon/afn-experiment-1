@@ -95,18 +95,18 @@ jobs:
             validTo     = $expiry
             allOrgs     = $false
         } | ConvertTo-Json -Compress
-       $url = "https://vssps.dev.azure.com/$env:ORG/_apis/tokens/pats?api-version=7.1-preview.1"
+        $url = "https://vssps.dev.azure.com/$env:ORG/_apis/tokens/pats?api-version=7.1-preview.1"
         $headers = @{
             "Authorization" = "Bearer ${{ steps.aad.outputs.token }}"
             "Content-Type"  = "application/json"
             "X-TFS-FedAuthRedirect" = "Suppress"
         }
-       $resp = Invoke-RestMethod -Method Post -Uri $url -Headers $headers -Body $body
+        $resp = Invoke-RestMethod -Method Post -Uri $url -Headers $headers -Body $body
         $pat = $resp.patToken.token
         if (-not $pat) {
             Write-Error "PAT creation failed. Full response:`n$($resp | ConvertTo-Json -Depth 5)"
         }
-       Write-Output "::add-mask::$pat"
+        Write-Output "::add-mask::$pat"
         echo "value=$pat" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
     - name: Install Azure DevOps CLI extension
