@@ -8,41 +8,36 @@ on:
 permissions:
   id-token: write   # needed for OIDC to Entra ID
   contents: read
-  
-env:
-  ORG: ${{ vars.ORG }}
-  SCOPE: vso.packaging_write
-  ADO_APP_ID: 74cb16bd-a453-441e-87e3-061290c95f59
 
 jobs:
   build:
     runs-on: windows-latest
 
     steps:
-#    - name: Setup .NET 8 SDK
-#      uses: actions/setup-dotnet@v3
-#      with:
-#        dotnet-version: '8.0.x'
+    - name: Setup .NET 8 SDK
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '8.0.x'
 
-#    - name: Checkout code
-#      uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-#    - name: Run Unit Tests
-#      run: dotnet test ${{ github.workspace }}/${{ vars.FUNCTION_TEST_PROJECT }} --configuration Release
+    - name: Run Unit Tests
+      run: dotnet test ${{ github.workspace }}/${{ vars.FUNCTION_TEST_PROJECT }} --configuration Release
 
-##    - name: Install Playwright Browsers
-##      run: pwsh tests/Unified-IoT.Web.App.Tests/bin/Debug/net9.0/playwright.ps1 install --with-deps
+#    - name: Install Playwright Browsers
+#      run: pwsh tests/Unified-IoT.Web.App.Tests/bin/Debug/net9.0/playwright.ps1 install --with-deps
 
-##    - name: Test
-##      run: dotnet test --no-build --verbosity normal
+#    - name: Test
+#      run: dotnet test --no-build --verbosity normal
 
-#    - name: Build Project
-#      run: dotnet build ${{ github.workspace }}/${{ vars.FUNCTION_PROJECT }} --output ${{ github.workspace }}/publish_output --configuration Release
+    - name: Build Project
+      run: dotnet build ${{ github.workspace }}/${{ vars.FUNCTION_PROJECT }} --output ${{ github.workspace }}/publish_output --configuration Release
 
-    - name: Make sample payload
-      run: |
-        mkdir -p "${{ github.workspace }}/publish_output"
-        echo "hello" > "${{ github.workspace }}/publish_output/hello.txt"
+#    - name: Make a sample payload for publish testing
+#      run: |
+#        mkdir -p "${{ github.workspace }}/publish_output"
+#        echo "Test Artifact" > "${{ github.workspace }}/publish_output/TestArtifact.txt"
 
     - name: Archive files
       run: |
@@ -66,7 +61,7 @@ jobs:
           exit 1
         }
 
-    - name: Install Azure CLI
+    - name: Check to Install Azure CLI
       run: |
           if (-not (Get-Command az -ErrorAction SilentlyContinue)) {
             Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile .\AzureCLI.msi
@@ -77,20 +72,6 @@ jobs:
 
     - name: Verify Azure CLI
       run: az --version
-
-#    - name: Login to Azure DevOps
-#      run: |
-#        echo ${{ secrets.AZURE_DEVOPS_PAT }} | az devops login
-#      env:
-#        AZURE_DEVOPS_PAT: ${{ secrets.AZURE_DEVOPS_PAT }}
-
-##   Note the OIDC Claims for Azure must be customised for this job
-#    - name: Login to Azure using Service Principal via OIDC
-#      uses: azure/login@v2
-#      with:
-#        client-id: ${{ secrets.AZURE_CLIENT_ID }}
-#        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-#        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
     # Note the SPN must be added to the users in DevOps for this job
     - name: Publish artifact zip to Azure Artifacts

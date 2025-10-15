@@ -34,6 +34,11 @@ jobs:
     - name: Build Project
       run: dotnet build ${{ github.workspace }}/${{ vars.FUNCTION_PROJECT }} --output ${{ github.workspace }}/publish_output --configuration Release
 
+#    - name: Make a sample payload for publish testing
+#      run: |
+#        mkdir -p "${{ github.workspace }}/publish_output"
+#        echo "Test Artifact" > "${{ github.workspace }}/publish_output/TestArtifact.txt"
+
     - name: Archive files
       run: |
         mkdir -p ${{ github.workspace }}/artifacts
@@ -56,31 +61,26 @@ jobs:
           exit 1
         }
 
-    - name: Install Azure CLI
+    - name: Check to Install Azure CLI
       run: |
-        Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile .\AzureCLI.msi
-        Start-Process msiexec.exe -Wait -ArgumentList '/I AzureCLI.msi /quiet'
+          if (-not (Get-Command az -ErrorAction SilentlyContinue)) {
+            Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile .\AzureCLI.msi
+            Start-Process msiexec.exe -Wait -ArgumentList '/I AzureCLI.msi /quiet'
+          } else {
+            Write-Host "Azure CLI already installed."
+          }
 
     - name: Verify Azure CLI
       run: az --version
 
-#    - name: Login to Azure DevOps
-#      run: |
-#        echo ${{ secrets.AZURE_DEVOPS_PAT }} | az devops login
-#      env:
-#        AZURE_DEVOPS_PAT: ${{ secrets.AZURE_DEVOPS_PAT }}
-
-#   Note the OIDC Claims for Azure must be customised for this job
-    - name: Login to Azure using Service Principal via OIDC
-      uses: azure/login@v2
-      with:
-        client-id: ${{ secrets.AZURE_CLIENT_ID }}
-        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
     # Note the SPN must be added to the users in DevOps for this job
     - name: Publish artifact zip to Azure Artifacts
+      env:
+        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+        AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
       run: |
+        az login --service-principal --username $env:AZURE_CLIENT_ID --password=$env:AZURE_CLIENT_SECRET --tenant $env:AZURE_TENANT_ID
         az artifacts universal publish `
           --organization ${{ vars.AZURE_ORGANIZATION_URL }} `
           --project "${{ vars.AZURE_PROJECT_NAME }}" `
