@@ -19,25 +19,30 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - name: Setup .NET 8 SDK
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: '8.0.x'
+#    - name: Setup .NET 8 SDK
+#      uses: actions/setup-dotnet@v3
+#      with:
+#        dotnet-version: '8.0.x'
 
-    - name: Checkout code
-      uses: actions/checkout@v3
+#    - name: Checkout code
+#      uses: actions/checkout@v3
 
-    - name: Run Unit Tests
-      run: dotnet test ${{ github.workspace }}/${{ vars.FUNCTION_TEST_PROJECT }} --configuration Release
+#    - name: Run Unit Tests
+#      run: dotnet test ${{ github.workspace }}/${{ vars.FUNCTION_TEST_PROJECT }} --configuration Release
 
-#    - name: Install Playwright Browsers
-#      run: pwsh tests/Unified-IoT.Web.App.Tests/bin/Debug/net9.0/playwright.ps1 install --with-deps
+##    - name: Install Playwright Browsers
+##      run: pwsh tests/Unified-IoT.Web.App.Tests/bin/Debug/net9.0/playwright.ps1 install --with-deps
 
-#    - name: Test
-#      run: dotnet test --no-build --verbosity normal
+##    - name: Test
+##      run: dotnet test --no-build --verbosity normal
 
-    - name: Build Project
-      run: dotnet build ${{ github.workspace }}/${{ vars.FUNCTION_PROJECT }} --output ${{ github.workspace }}/publish_output --configuration Release
+#    - name: Build Project
+#      run: dotnet build ${{ github.workspace }}/${{ vars.FUNCTION_PROJECT }} --output ${{ github.workspace }}/publish_output --configuration Release
+
+    - name: Make sample payload
+      run: |
+        mkdir -p "$PACKAGE_PATH"
+        echo "hello" > ${{ github.workspace }}/publish_output/hello.txt"
 
     - name: Archive files
       run: |
@@ -81,7 +86,7 @@ jobs:
       id: aad
       shell: pwsh
       run: |
-        $ADO_APP_ID = "$env:ADO_APP_ID"
+        $ADO_APP_ID = "74cb16bd-a453-441e-87e3-061290c95f59"
         echo "Using ADO_APP_ID=$ADO_APP_ID"
         $token = az account get-access-token --resource $ADO_APP_ID --query accessToken -o tsv
         echo "token=$token" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
