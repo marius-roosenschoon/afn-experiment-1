@@ -71,21 +71,49 @@ jobs:
 #        AZURE_DEVOPS_PAT: ${{ secrets.AZURE_DEVOPS_PAT }}
 
 #   Note the OIDC Claims for Azure must be customised for this job
-    - name: Login to Azure using Service Principal
+    - name: Login to Azure using Service Principal via OIDC
       uses: azure/login@v1
       with:
         client-id: ${{ secrets.AZURE_CLIENT_ID }}
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-    - name: Obtain temporary Azure DevOps PAT
-      id: get_pat
+    - name: Get AAD access token for Azure DevOps resource
+      id: aad
       run: |
-        $pat = az devops personal-access-token create --organization ${{ vars.AZURE_ORGANIZATION_URL }} --scope "vso.packaging_write vso.packaging_read" --output tsv --query patToken
-        echo "::add-mask::$pat"
-        echo "pat=$pat" >> $env:GITHUB_ENV
-      env:
-        AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
+        # Azure DevOps AAD resource/app id
+        ADO_APP_ID=499b84ac-1321-427f-aa17-267ca6975798
+        AAD_TOKEN=$(az account get-access-token --resource $ADO_APP_ID --query accessToken -o tsv)
+        echo "token=$AAD_TOKEN" >> $GITHUB_OUTPUT
+
+    - name: Create short-lived PAT (Packaging write)
+      id: pat
+      run: |
+        EXPIRY=$(date -u -d "+1 hour" +"%Y-%m-%dT%H:%M:%SZ")
+        BODY=$(jq -n \
+          --arg dn "gha-${{ github.run_id }}" \
+          --arg sc "vso.packaging_write" \
+          --arg vt "$EXPIRY" \
+          '{displayName:$dn, scope:$sc, validTo:$vt, allOrgs:false}')
+        PAT_JSON=$(curl -sS -X POST \
+          -H "Content-Type: application/json" \
+          -H "Authorization: Bearer ${{ steps.aad.outputs.token }}" \
+          "https://vssps.dev.azure.com/${{ env.ORG }}/_apis/tokens/pats?api-version=7.1-preview.1" \
+          -d "$BODY")
+        PAT=$(echo "$PAT_JSON" | jq -r '.patToken.token')
+        if [ -z "$PAT" ] || [ "$PAT" = "null" ]; then
+          echo "Failed to mint PAT"; echo "$PAT_JSON"; exit 1
+        fi
+        echo "::add-mask::$PAT"
+        echo "value=$PAT" >> $GITHUB_OUTPUT
+
+    - name: Install Azure DevOps CLI extension
+      run: |
+        az extension add --name azure-devops || az extension update --name azure-devops
+
+    - name: Login az devops with temp PAT
+      run: |
+        echo "${{ steps.pat.outputs.value }}" | az devops login --organization "https://dev.azure.com/${{ env.ORG }}"
 
 #   Note the SPN must be added to the users in DevOps for this job
     - name: Publish artifact zip to Azure Artifacts
