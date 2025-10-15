@@ -12,6 +12,7 @@ permissions:
 env:
   ORG: ${{ vars.ORG }}
   SCOPE: vso.packaging_write
+  ADO_APP_ID: 74cb16bd-a453-441e-87e3-061290c95f59
 
 jobs:
   build:
@@ -80,7 +81,8 @@ jobs:
       id: aad
       shell: pwsh
       run: |
-        $ADO_APP_ID = ${{ secrets.AZURE_CLIENT_ID }}
+        $ADO_APP_ID = "$env:ADO_APP_ID"
+        echo "Using ADO_APP_ID=$ADO_APP_ID"
         $token = az account get-access-token --resource $ADO_APP_ID --query accessToken -o tsv
         echo "token=$token" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
