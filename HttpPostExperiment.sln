@@ -1,0 +1,42 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.36105.23
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "functions", "functions", "{810CE935-BCC8-49E3-92FD-C2400CA3B7DC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{F888FF5A-E220-4DC5-93AA-BB13D20B1E4F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpTriggerPostExperimentTests", "tests\HttpTriggerPostExperimentTests\HttpTriggerPostExperimentTests.csproj", "{C7315B90-2FC8-A00C-E981-CE2DC6EF0910}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpPostExperiment", "src\functions\HttpPostExperiment\HttpPostExperiment.csproj", "{2D18E8C6-8467-413A-13D5-5A19835484D5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C7315B90-2FC8-A00C-E981-CE2DC6EF0910}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7315B90-2FC8-A00C-E981-CE2DC6EF0910}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C7315B90-2FC8-A00C-E981-CE2DC6EF0910}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C7315B90-2FC8-A00C-E981-CE2DC6EF0910}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D18E8C6-8467-413A-13D5-5A19835484D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D18E8C6-8467-413A-13D5-5A19835484D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D18E8C6-8467-413A-13D5-5A19835484D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D18E8C6-8467-413A-13D5-5A19835484D5}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{810CE935-BCC8-49E3-92FD-C2400CA3B7DC} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{C7315B90-2FC8-A00C-E981-CE2DC6EF0910} = {F888FF5A-E220-4DC5-93AA-BB13D20B1E4F}
+		{2D18E8C6-8467-413A-13D5-5A19835484D5} = {810CE935-BCC8-49E3-92FD-C2400CA3B7DC}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {ED7B6AE6-0566-44D3-AF85-3C42CEE8D9E0}
+	EndGlobalSection
+EndGlobal

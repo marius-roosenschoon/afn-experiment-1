@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\HttpPostExperiment\HttpPostExperiment.csproj" />
+    <ProjectReference Include="..\..\src\functions\HttpPostExperiment\HttpPostExperiment.csproj" />
   </ItemGroup>
 
   <ItemGroup>
