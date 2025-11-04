@@ -57,13 +57,8 @@ jobs:
         run: dotnet test ${{ env.KUI_SOLUTION_TEST_PROJECT }} --configuration ${{ env.KUI_SOLUTION_BUILD_CONFIGURATION }}
       - name: Copy function app files
         run: |
-          cp -a ${{ github.workspace }}/Directory.Build.props ${{ env.KUI_SOLUTION_WORK_PATH }}/Directory.Build.props
-          mkdir -p ${{ env.KUI_SOLUTION_WORK_PATH }}/src/aspire
-          cp -a ${{ github.workspace }}/src/aspire ${{ env.KUI_SOLUTION_WORK_PATH }}/src/aspire
-          mkdir -p ${{ env.KUI_SOLUTION_WORK_PATH }}/src/shared
-          cp -a ${{ github.workspace }}/src/shared ${{ env.KUI_SOLUTION_WORK_PATH }}/src/shared
           mkdir -p ${{ env.KUI_SOLUTION_WORK_PATH }}/src/functions
-          cp -a ${{ github.workspace }}/src/functions ${{ env.KUI_SOLUTION_WORK_PATH }}/src/functions
+          cp -a ${{ env.KUI_SOLUTION_SOURCE_PATH }} ${{ env.KUI_SOLUTION_WORK_PATH }}/src/functions/
       - name: Dotnet Restore
         run: dotnet restore ${{ env.KUI_SOLUTION_SOURCE_PATH }}/${{ env.KUI_SOLUTION_PROJECT }}
       - name: Dotnet Publish
