@@ -82,3 +82,27 @@ jobs:
           fi
       - name: List KUI_ARTIFACT_RELEASE_PATH project files recursively
         run: ls -lRh ${{ env.KUI_ARTIFACT_RELEASE_PATH }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      AZURE_CLIENT_ID: ${{ secrets.KUI_SPN_DEV_CLIENT_ID }}
+      AZURE_CLIENT_SECRET: ${{ secrets.KUI_SPN_DEV_CLIENT_SECRET }}
+      AZURE_TENANT_ID: ${{ secrets.KUI_SPN_DEV_TENANT_ID }}
+      KUI_FUNCTION_APP_NAME: ${{ vars.KUI_OTA_DEV_FUNCTION_APP_NAME }}
+      KUI_RG: ${{ vars.KUI_OTA_DEV_RG }}
+    steps:
+      - name: Download Release Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.KUI_ARTIFACT_ZIP_NAME }}
+          path: ${{ github.workspace }}/release
+      - name: List release artifact files
+        run: ls -lRh ${{ github.workspace }}/release
+      - name: Deploy to Azure Functions
+        run: |
+          az login --service-principal --username ${{ env.AZURE_CLIENT_ID }} --password=${{ env.AZURE_CLIENT_SECRET }} --tenant ${{ env.AZURE_TENANT_ID }}
+          bash ${{ env.KUI_SCRIPT_STAGE_1 }}
+          RG="${{ env.KUI_RG }}" FUNCTION_APP_NAME="${{ env.KUI_FUNCTION_APP_NAME }}" PACKAGE_PATH="${{ env.KUI_ARTIFACT_RELEASE_PATH }}/${{ env.KUI_ARTIFACT_ZIP_NAME }}_${{ env.KUI_ARTIFACT_VERSION }}.zip" bash ${{ env.KUI_SCRIPT_STAGE_2 }}
+          RG="${{ env.KUI_RG }}" FUNCTION_APP_NAME="${{ env.KUI_FUNCTION_APP_NAME }}" bash ${{ env.KUI_SCRIPT_STAGE_3 }}
