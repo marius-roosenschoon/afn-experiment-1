@@ -6,12 +6,12 @@ echo "| Ensure ingress is enabled |"
 echo "+---------------------------+"
 
 RG="${RG}"
-APP="${ACA_APP}"
+FUNCTION_APP_NAME="${FUNCTION_APP_NAME}"
 
-echo "Enabling ingress for app $APP"
+echo "Enabling ingress for app $FUNCTION_APP_NAME"
 az containerapp ingress enable \
   --resource-group "$RG" \
-  --name "$APP" \
+  --name "$FUNCTION_APP_NAME" \
   --type external \
   --target-port 80
 

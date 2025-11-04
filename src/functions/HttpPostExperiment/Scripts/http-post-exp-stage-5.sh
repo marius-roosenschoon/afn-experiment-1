@@ -6,9 +6,9 @@ echo "| Smoke test |"
 echo "+------------+"
 
 RG="${RG}"
-APP="${ACA_APP}"
+FUNCTION_APP_NAME="${FUNCTION_APP_NAME}"
 
-FQDN="$(az containerapp show -g "$RG" -n "$APP" --query properties.configuration.ingress.fqdn -o tsv)"
+FQDN="$(az functionapp show -g "$RG" -n "$FUNCTION_APP_NAME" --query defaultHostName -o tsv)"
 if [ -z "${FQDN:-}" ]; then
   echo "##vso[task.logissue type=warning]No ingress FQDN configured."
   exit 0

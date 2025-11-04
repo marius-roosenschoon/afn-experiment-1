@@ -110,3 +110,5 @@ jobs:
           bash ${{ env.KUI_SCRIPT_STAGE_1 }}
           RG="${{ env.KUI_RG }}" FUNCTION_APP_NAME="${{ env.KUI_FUNCTION_APP_NAME }}" PACKAGE_PATH="${{ env.KUI_ARTIFACT_RELEASE_PATH }}/${{ env.KUI_ARTIFACT_ZIP_NAME }}_${{ env.KUI_ARTIFACT_VERSION }}.zip" bash ${{ env.KUI_SCRIPT_STAGE_2 }}
           RG="${{ env.KUI_RG }}" FUNCTION_APP_NAME="${{ env.KUI_FUNCTION_APP_NAME }}" bash ${{ env.KUI_SCRIPT_STAGE_3 }}
+          # RG="${{ env.KUI_RG }}" FUNCTION_APP_NAME="${{ env.KUI_FUNCTION_APP_NAME }}" bash ${{ env.KUI_SCRIPT_STAGE_4 }}
+          RG="${{ env.KUI_RG }}" FUNCTION_APP_NAME="${{ env.KUI_FUNCTION_APP_NAME }}" bash ${{ env.KUI_SCRIPT_STAGE_5 }}          
