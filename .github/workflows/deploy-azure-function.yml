@@ -67,6 +67,10 @@ jobs:
         run: |
           cd ${{ env.KUI_SOLUTION_BUILD_PATH }}
           zip -r ${{ env.KUI_ARTIFACT_RELEASE_PATH }}/${{ env.KUI_ARTIFACT_ZIP_NAME }}_${{ env.KUI_ARTIFACT_VERSION }}.zip .
+      - name: Copy Scripts to artifact release path
+        run: |
+          mkdir -p ${{ env.KUI_ARTIFACT_RELEASE_PATH }}/Scripts
+          cp -a ${{ env.KUI_SOLUTION_SOURCE_PATH }}/Scripts/* ${{ env.KUI_ARTIFACT_RELEASE_PATH }}/Scripts/
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -90,8 +94,8 @@ jobs:
       AZURE_CLIENT_ID: ${{ secrets.KUI_SPN_DEV_CLIENT_ID }}
       AZURE_CLIENT_SECRET: ${{ secrets.KUI_SPN_DEV_CLIENT_SECRET }}
       AZURE_TENANT_ID: ${{ secrets.KUI_SPN_DEV_TENANT_ID }}
-      KUI_FUNCTION_APP_NAME: ${{ vars.KUI_OTA_DEV_FUNCTION_APP_NAME }}
-      KUI_RG: ${{ vars.KUI_OTA_DEV_RG }}
+      KUI_FUNCTION_APP_NAME: ${{ vars.KUI_DEV_FUNCTION_APP_01_NAME }}
+      KUI_RG: ${{ vars.KUI_DEV_RG }}
     steps:
       - name: Download Release Artifact
         uses: actions/download-artifact@v4
