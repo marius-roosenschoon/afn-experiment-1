@@ -30,6 +30,7 @@ env:
   KUI_SCRIPT_STAGE_1: ${{ github.workspace }}/release/Scripts/http-post-exp-stage-1.sh
   KUI_SCRIPT_STAGE_2: ${{ github.workspace }}/release/Scripts/http-post-exp-stage-2.sh
   KUI_SCRIPT_STAGE_3: ${{ github.workspace }}/release/Scripts/http-post-exp-stage-3.sh
+  KUI_SCRIPT_STAGE_4: ${{ github.workspace }}/release/Scripts/http-post-exp-stage-4.sh
 
 jobs:
   build:
@@ -110,5 +111,4 @@ jobs:
           bash ${{ env.KUI_SCRIPT_STAGE_1 }}
           RG="${{ env.KUI_RG }}" FUNCTION_APP_NAME="${{ env.KUI_FUNCTION_APP_NAME }}" PACKAGE_PATH="${{ env.KUI_ARTIFACT_RELEASE_PATH }}/${{ env.KUI_ARTIFACT_ZIP_NAME }}_${{ env.KUI_ARTIFACT_VERSION }}.zip" bash ${{ env.KUI_SCRIPT_STAGE_2 }}
           RG="${{ env.KUI_RG }}" FUNCTION_APP_NAME="${{ env.KUI_FUNCTION_APP_NAME }}" bash ${{ env.KUI_SCRIPT_STAGE_3 }}
-          # RG="${{ env.KUI_RG }}" FUNCTION_APP_NAME="${{ env.KUI_FUNCTION_APP_NAME }}" bash ${{ env.KUI_SCRIPT_STAGE_4 }}
-          RG="${{ env.KUI_RG }}" FUNCTION_APP_NAME="${{ env.KUI_FUNCTION_APP_NAME }}" bash ${{ env.KUI_SCRIPT_STAGE_5 }}          
+          RG="${{ env.KUI_RG }}" FUNCTION_APP_NAME="${{ env.KUI_FUNCTION_APP_NAME }}" bash ${{ env.KUI_SCRIPT_STAGE_4 }}
