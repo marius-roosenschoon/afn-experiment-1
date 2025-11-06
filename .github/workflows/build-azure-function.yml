@@ -1,14 +1,11 @@
 name: Build HttpTriggerPostExperiment
 
 on:
-  workflow_dispatch:
+  workflow_call:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    secrets: inherit
-    permissions: inherit
-    env: inherit
 
     steps:
       - name: Setup .NET SDK

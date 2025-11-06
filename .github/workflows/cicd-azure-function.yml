@@ -33,7 +33,7 @@ env:
   KUI_SCRIPT_STAGE_4: ${{ github.workspace }}/release/Scripts/http-post-exp-stage-4.sh
 
 jobs:
- 
+
   build:
-    uses: .github/workflows/pipeline-jobs/build-azure-function.yml
+    uses: ./.github/workflows/build-azure-function.yml
     secrets: inherit
