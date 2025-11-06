@@ -5,13 +5,22 @@ on:
 
 env:
   KUI_SOLUTION: HttpPostExperiment.sln
+  KUI_SOLUTION_PROJECT: HttpPostExperiment.csproj
   KUI_SOLUTION_BUILD_CONFIGURATION: Release
+  KUI_SOLUTION_TEST_PROJECT: ${{ github.workspace }}/tests/HttpTriggerPostExperimentTests/HttpTriggerPostExperimentTests.csproj
+  KUI_SOLUTION_SOURCE_PATH: ${{ github.workspace }}/src/functions/HttpPostExperiment
   KUI_SOLUTION_WORK_PATH: ${{ github.workspace }}/http_post_exp_function_app
-  KUI_SOLUTION_ARTIFACTS_PATH: ${{ github.workspace }}/artifacts
+  KUI_SOLUTION_BUILD_PATH: ${{ github.workspace }}/http_post_exp_function_app/build
+
+  KUI_ARTIFACT_VERSION: 1.0.${{ github.run_number }}
+  KUI_ARTIFACT_RELEASE_PATH: ${{ github.workspace }}/release
+  KUI_ARTIFACT_ZIP_NAME: http-post-exp-fa-package
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      name: Development
     steps:
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
@@ -19,9 +28,46 @@ jobs:
           dotnet-version: 8.0.x
       - name: Checkout code
         uses: actions/checkout@v4
+      - name: Prepare KUI_SOLUTION_WORK_PATH directory
+        run: mkdir -p ${{ env.KUI_SOLUTION_WORK_PATH }}
+      - name: Prepare KUI_ARTIFACT_RELEASE_PATH directory
+        run: mkdir -p ${{ env.KUI_ARTIFACT_RELEASE_PATH }}
       - name: Dotnet Clean
         run: dotnet clean ${{ env.KUI_SOLUTION }}
       - name: Dotnet Restore
         run: dotnet restore ${{ env.KUI_SOLUTION }}
       - name: Dotnet Build
         run: dotnet build ${{ env.KUI_SOLUTION }} -c ${{ env.KUI_SOLUTION_BUILD_CONFIGURATION }} --no-restore
+      - name: Run Unit Tests
+        run: dotnet test ${{ env.KUI_SOLUTION_TEST_PROJECT }} --configuration ${{ env.KUI_SOLUTION_BUILD_CONFIGURATION }}
+      - name: Copy function app files
+        run: |
+          mkdir -p ${{ env.KUI_SOLUTION_WORK_PATH }}/src/functions
+          cp -a ${{ env.KUI_SOLUTION_SOURCE_PATH }} ${{ env.KUI_SOLUTION_WORK_PATH }}/src/functions/
+      - name: Dotnet Restore
+        run: dotnet restore ${{ env.KUI_SOLUTION_SOURCE_PATH }}/${{ env.KUI_SOLUTION_PROJECT }}
+      - name: Dotnet Publish
+        run: dotnet publish ${{ env.KUI_SOLUTION_SOURCE_PATH }}/${{ env.KUI_SOLUTION_PROJECT }} -c ${{ env.KUI_SOLUTION_BUILD_CONFIGURATION }} -o ${{ env.KUI_SOLUTION_BUILD_PATH }}
+      - name: Create deployment package
+        run: |
+          cd ${{ env.KUI_SOLUTION_BUILD_PATH }}
+          zip -r ${{ env.KUI_ARTIFACT_RELEASE_PATH }}/${{ env.KUI_ARTIFACT_ZIP_NAME }}_${{ env.KUI_ARTIFACT_VERSION }}.zip .
+      - name: Copy Scripts to artifact release path
+        run: |
+          mkdir -p ${{ env.KUI_ARTIFACT_RELEASE_PATH }}/Scripts
+          cp -a ${{ env.KUI_SOLUTION_SOURCE_PATH }}/Scripts/* ${{ env.KUI_ARTIFACT_RELEASE_PATH }}/Scripts/
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.KUI_ARTIFACT_ZIP_NAME }}
+          path: ${{ env.KUI_ARTIFACT_RELEASE_PATH }}
+      - name: Verify DevOps Artifact exists
+        run: |
+          if [ -f "${{ env.KUI_ARTIFACT_RELEASE_PATH }}/${{ env.KUI_ARTIFACT_ZIP_NAME }}_${{ env.KUI_ARTIFACT_VERSION }}.zip" ]; then
+            echo "DevOps Artifact ${{ env.KUI_ARTIFACT_ZIP_NAME }}_${{ env.KUI_ARTIFACT_VERSION }}.zip exists"
+          else
+            echo "DevOps Artifact ${{ env.KUI_ARTIFACT_ZIP_NAME }}_${{ env.KUI_ARTIFACT_VERSION }}.zip is missing"
+            exit 1
+          fi
+      - name: List KUI_ARTIFACT_RELEASE_PATH project files recursively
+        run: ls -lRh ${{ env.KUI_ARTIFACT_RELEASE_PATH }}
