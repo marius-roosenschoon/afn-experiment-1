@@ -35,5 +35,11 @@ env:
 jobs:
 
   build:
-    uses: ./.github/workflows/build-azure-function.yml
-    secrets: inherit
+      uses: ./.github/workflows/build-azure-function.yml
+      secrets: inherit
+      with:
+        KUI_SOLUTION_WORK_PATH: ${{ env.KUI_SOLUTION_WORK_PATH }}
+        KUI_SOLUTION_ARTIFACTS_PATH: ${{ env.KUI_SOLUTION_ARTIFACTS_PATH }}
+        KUI_ARTIFACT_RELEASE_PATH: ${{ env.KUI_ARTIFACT_RELEASE_PATH }}
+        KUI_SOLUTION: ${{ env.KUI_SOLUTION }}
+        KUI_SOLUTION_BUILD_CONFIGURATION: ${{ env.KUI_SOLUTION_BUILD_CONFIGURATION }}
