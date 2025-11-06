@@ -17,7 +17,6 @@ jobs:
   release-dev:
     runs-on: ubuntu-latest
     env:
-      name: Development
       AZURE_CLIENT_ID: ${{ secrets.KUI_SPN_DEV_CLIENT_ID }}
       AZURE_CLIENT_SECRET: ${{ secrets.KUI_SPN_DEV_CLIENT_SECRET }}
       AZURE_TENANT_ID: ${{ secrets.KUI_SPN_DEV_TENANT_ID }}
