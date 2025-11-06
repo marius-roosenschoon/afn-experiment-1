@@ -1,4 +1,4 @@
-name: Build HttpTriggerPostExperiment
+name: Release HttpTriggerPostExperiment Development
 
 on:
   workflow_call:
@@ -15,7 +15,6 @@ env:
 
 jobs:
   release-dev:
-    needs: build
     runs-on: ubuntu-latest
     env:
       name: Development
