@@ -19,12 +19,6 @@ jobs:
           dotnet-version: 8.0.x
       - name: Checkout code
         uses: actions/checkout@v4
-#      - name: Prepare KUI_SOLUTION_WORK_PATH directory
-#        run: mkdir -p ${{ env.KUI_SOLUTION_WORK_PATH }}
-#      - name: Prepare KUI_SOLUTION_ARTIFACTS_PATH directory
-#        run: mkdir -p ${{ env.KUI_SOLUTION_ARTIFACTS_PATH }}
-#      - name: Prepare KUI_ARTIFACT_RELEASE_PATH directory
-#        run: mkdir -p ${{ env.KUI_ARTIFACT_RELEASE_PATH }}
       - name: Dotnet Clean
         run: dotnet clean ${{ env.KUI_SOLUTION }}
       - name: Dotnet Restore

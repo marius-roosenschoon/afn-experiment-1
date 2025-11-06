@@ -1,0 +1,15 @@
+name: Build HttpTriggerPostExperiment
+
+on:
+  workflow_call:
+
+env:
+  KUI_SOLUTION_BUILD_CONFIGURATION: Release
+  KUI_SOLUTION_TEST_PROJECT: ${{ github.workspace }}/tests/HttpTriggerPostExperimentTests/HttpTriggerPostExperimentTests.csproj
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Unit Tests
+        run: dotnet test ${{ env.KUI_SOLUTION_TEST_PROJECT }} --configuration ${{ env.KUI_SOLUTION_BUILD_CONFIGURATION }}
