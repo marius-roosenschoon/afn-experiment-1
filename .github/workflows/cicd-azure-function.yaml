@@ -40,5 +40,5 @@ defaults:
 jobs:
  
   build:
-    uses: ./.github/workflows/pipeline-jobs/build-azure-function.yml
+    uses: .github/workflows/pipeline-jobs/build-azure-function.yml
     secrets: inherit
