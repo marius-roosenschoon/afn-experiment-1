@@ -32,11 +32,6 @@ env:
   KUI_SCRIPT_STAGE_3: ${{ github.workspace }}/release/Scripts/http-post-exp-stage-3.sh
   KUI_SCRIPT_STAGE_4: ${{ github.workspace }}/release/Scripts/http-post-exp-stage-4.sh
 
-
-defaults:
-  run:
-    shell: bash
-    
 jobs:
  
   build:
