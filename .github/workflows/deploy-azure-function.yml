@@ -114,7 +114,7 @@ jobs:
           RG="${{ env.KUI_RG }}" FUNCTION_APP_NAME="${{ env.KUI_FUNCTION_APP_NAME }}" bash ${{ env.KUI_SCRIPT_STAGE_4 }}
 
   release-tst:
-    needs: build
+    needs: release-dev
     runs-on: ubuntu-latest
     env:
       AZURE_CLIENT_ID: ${{ secrets.KUI_SPN_TST_CLIENT_ID }}
