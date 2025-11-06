@@ -16,5 +16,6 @@ jobs:
     secrets: inherit
 
   unit-test:
+    needs: build
     uses: ./.github/workflows/unit-test-azure-function.yml
     secrets: inherit  
