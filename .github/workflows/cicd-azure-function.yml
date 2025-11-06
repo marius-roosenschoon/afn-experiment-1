@@ -35,5 +35,5 @@ env:
 jobs:
 
   build:
-    uses: ./.github/workflows/workflows-azure-function/build-azure-function.yml
+    uses: ./.github/workflows/build-azure-function.yml
     secrets: inherit
