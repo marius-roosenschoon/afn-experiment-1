@@ -32,7 +32,7 @@ jobs:
       - name: Print github.workspace
         run: echo "${{ github.workspace }}"
       - name: Print KUI_SOLUTION_WORK_PATH
-        run: echo "${{ inputs.KUI_SOLUTION_WORK_PATH }}"
+        run: echo "${{ env.KUI_SOLUTION_WORK_PATH }}"
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
@@ -40,14 +40,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Prepare KUI_SOLUTION_WORK_PATH directory
-        run: mkdir -p ${{ inputs.KUI_SOLUTION_WORK_PATH }}
+        run: mkdir -p ${{ env.KUI_SOLUTION_WORK_PATH }}
       - name: Prepare KUI_SOLUTION_ARTIFACTS_PATH directory
-        run: mkdir -p ${{ inputs.KUI_SOLUTION_ARTIFACTS_PATH }}
+        run: mkdir -p ${{ env.KUI_SOLUTION_ARTIFACTS_PATH }}
       - name: Prepare KUI_ARTIFACT_RELEASE_PATH directory
-        run: mkdir -p ${{ inputs.KUI_ARTIFACT_RELEASE_PATH }}
+        run: mkdir -p ${{ env.KUI_ARTIFACT_RELEASE_PATH }}
       - name: Dotnet Clean
-        run: dotnet clean ${{ inputs.KUI_SOLUTION }}
+        run: dotnet clean ${{ env.KUI_SOLUTION }}
       - name: Dotnet Restore
-        run: dotnet restore ${{ inputs.KUI_SOLUTION }}
+        run: dotnet restore ${{ env.KUI_SOLUTION }}
       - name: Dotnet Build
-        run: dotnet build ${{ inputs.KUI_SOLUTION }} -c ${{ inputs.KUI_SOLUTION_BUILD_CONFIGURATION }} --no-restore
+        run: dotnet build ${{ env.KUI_SOLUTION }} -c ${{ env.KUI_SOLUTION_BUILD_CONFIGURATION }} --no-restore
