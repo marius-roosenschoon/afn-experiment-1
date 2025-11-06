@@ -35,6 +35,8 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      name: Development
     steps:
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
@@ -92,6 +94,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     env:
+      name: Development
       AZURE_CLIENT_ID: ${{ secrets.KUI_SPN_DEV_CLIENT_ID }}
       AZURE_CLIENT_SECRET: ${{ secrets.KUI_SPN_DEV_CLIENT_SECRET }}
       AZURE_TENANT_ID: ${{ secrets.KUI_SPN_DEV_TENANT_ID }}
@@ -113,10 +116,12 @@ jobs:
           RG="${{ env.KUI_RG }}" FUNCTION_APP_NAME="${{ env.KUI_FUNCTION_APP_NAME }}" bash ${{ env.KUI_SCRIPT_STAGE_3 }}
           RG="${{ env.KUI_RG }}" FUNCTION_APP_NAME="${{ env.KUI_FUNCTION_APP_NAME }}" bash ${{ env.KUI_SCRIPT_STAGE_4 }}
 
+
   release-tst:
     needs: release-dev
     runs-on: ubuntu-latest
     env:
+      name: Test
       AZURE_CLIENT_ID: ${{ secrets.KUI_SPN_TST_CLIENT_ID }}
       AZURE_CLIENT_SECRET: ${{ secrets.KUI_SPN_TST_CLIENT_SECRET }}
       AZURE_TENANT_ID: ${{ secrets.KUI_SPN_TST_TENANT_ID }}
