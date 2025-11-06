@@ -44,5 +44,15 @@ namespace HttpPostExperiment
 
             return response;
         }
+
+        [FunctionName("Health")]
+        public static IActionResult Health(
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "health")] HttpRequest req,
+            ILogger log)
+        {
+            log.LogInformation("Health endpoint called.");
+            var healthResponse = new { status = "Healthy" };
+            return new OkObjectResult(healthResponse);
+        }
     }
 }

@@ -14,7 +14,7 @@ if [ -z "${FQDN:-}" ]; then
   exit 0
 fi
 echo "Testing https://$FQDN ..."
-if ! curl -fsS "https://$FQDN/health"; then
+if ! curl -fsS "https://$FQDN/Health"; then
   echo "Health endpoint failed; trying root..."
   curl -fsS "https://$FQDN" >/dev/null
 fi
