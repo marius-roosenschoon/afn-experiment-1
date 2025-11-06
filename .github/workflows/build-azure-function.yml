@@ -29,6 +29,10 @@ jobs:
       KUI_SOLUTION: ${{ inputs.KUI_SOLUTION }}
       KUI_SOLUTION_BUILD_CONFIGURATION: ${{ inputs.KUI_SOLUTION_BUILD_CONFIGURATION }}
     steps:
+      - name: Print github.workspace
+        run: echo "${{ github.workspace }}"
+      - name: Print KUI_SOLUTION_WORK_PATH
+        run: echo "${{ inputs.KUI_SOLUTION_WORK_PATH }}"
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
