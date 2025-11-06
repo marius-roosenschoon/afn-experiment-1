@@ -17,10 +17,4 @@ jobs:
 
   build:
       uses: ./.github/workflows/build-azure-function.yml
-      with:
-        KUI_SOLUTION: HttpPostExperiment.sln
-        KUI_SOLUTION_BUILD_CONFIGURATION: Release
-        KUI_SOLUTION_WORK_PATH: ${{ github.workspace }}/http_post_exp_function_app
-        KUI_SOLUTION_ARTIFACTS_PATH: ${{ github.workspace }}/artifacts
-        KUI_ARTIFACT_RELEASE_PATH: ${{ github.workspace }}/release
       secrets: inherit

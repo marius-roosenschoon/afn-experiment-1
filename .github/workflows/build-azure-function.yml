@@ -2,32 +2,16 @@ name: Build HttpTriggerPostExperiment
 
 on:
   workflow_call:
-    inputs:
-      KUI_SOLUTION_WORK_PATH:
-        required: true
-        type: string
-      KUI_SOLUTION_ARTIFACTS_PATH:
-        required: true
-        type: string
-      KUI_ARTIFACT_RELEASE_PATH:
-        required: true
-        type: string
-      KUI_SOLUTION:
-        required: true
-        type: string
-      KUI_SOLUTION_BUILD_CONFIGURATION:
-        required: true
-        type: string
+
+env:
+  KUI_SOLUTION: HttpPostExperiment.sln
+  KUI_SOLUTION_BUILD_CONFIGURATION: Release
+  KUI_SOLUTION_WORK_PATH: ${{ github.workspace }}/http_post_exp_function_app
+  KUI_SOLUTION_ARTIFACTS_PATH: ${{ github.workspace }}/artifacts
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      KUI_SOLUTION_WORK_PATH: ${{ inputs.KUI_SOLUTION_WORK_PATH }}
-      KUI_SOLUTION_ARTIFACTS_PATH: ${{ inputs.KUI_SOLUTION_ARTIFACTS_PATH }}
-      KUI_ARTIFACT_RELEASE_PATH: ${{ inputs.KUI_ARTIFACT_RELEASE_PATH }}
-      KUI_SOLUTION: ${{ inputs.KUI_SOLUTION }}
-      KUI_SOLUTION_BUILD_CONFIGURATION: ${{ inputs.KUI_SOLUTION_BUILD_CONFIGURATION }}
     steps:
       - name: Print github.workspace
         run: echo "${{ github.workspace }}"
