@@ -2,6 +2,10 @@ name: Build HttpTriggerPostExperiment
 
 on:
   workflow_call:
+    inputs:
+      KUI_ARTIFACT_ZIP_NAME:
+        required: true
+        type: string
 
 env:
   KUI_SOLUTION: HttpPostExperiment.sln
@@ -12,9 +16,9 @@ env:
   KUI_SOLUTION_WORK_PATH: ${{ github.workspace }}/http_post_exp_function_app
   KUI_SOLUTION_BUILD_PATH: ${{ github.workspace }}/http_post_exp_function_app/build
 
+  KUI_ARTIFACT_ZIP_NAME: ${{ inputs.KUI_ARTIFACT_ZIP_NAME }}
   KUI_ARTIFACT_VERSION: 1.0.${{ github.run_number }}
   KUI_ARTIFACT_RELEASE_PATH: ${{ github.workspace }}/release
-  KUI_ARTIFACT_ZIP_NAME: http-post-exp-fa-package
 
 jobs:
   build:

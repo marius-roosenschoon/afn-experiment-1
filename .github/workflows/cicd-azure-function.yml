@@ -13,8 +13,19 @@ jobs:
 
   build:
     uses: ./.github/workflows/build-azure-function.yml
+    with:
+      KUI_ARTIFACT_ZIP_NAME: http-post-exp-fa-package
 
   release-dev:
     needs: build
-    uses: ./.github/workflows/release-azure-function.yml
+    uses: ./.github/workflows/release-azure-function-dev.yml
+    with:
+      KUI_ARTIFACT_ZIP_NAME: http-post-exp-fa-package
+    secrets: inherit
+
+  release-tst:
+    needs: release-dev
+    uses: ./.github/workflows/release-azure-function-tst.yml
+    with:
+      KUI_ARTIFACT_ZIP_NAME: http-post-exp-fa-package
     secrets: inherit
