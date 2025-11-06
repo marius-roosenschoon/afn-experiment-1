@@ -2,6 +2,25 @@ name: Build HttpTriggerPostExperiment
 
 on:
   workflow_call:
+    inputs:
+      KUI_SOLUTION_WORK_PATH:
+        required: true
+        type: string
+      KUI_SOLUTION_ARTIFACTS_PATH:
+        required: true
+        type: string
+      KUI_ARTIFACT_RELEASE_PATH:
+        required: true
+        type: string
+      KUI_SOLUTION:
+        required: true
+        type: string
+      KUI_SOLUTION_BUILD_CONFIGURATION:
+        required: true
+        type: string
+    secrets:
+      AZURE_CREDENTIALS:
+        required: false
 
 jobs:
   build:
