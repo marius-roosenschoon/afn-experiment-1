@@ -18,14 +18,10 @@ on:
       KUI_SOLUTION_BUILD_CONFIGURATION:
         required: true
         type: string
-    secrets:
-      AZURE_CREDENTIALS:
-        required: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     env:
       KUI_SOLUTION_WORK_PATH: ${{ inputs.KUI_SOLUTION_WORK_PATH }}
       KUI_SOLUTION_ARTIFACTS_PATH: ${{ inputs.KUI_SOLUTION_ARTIFACTS_PATH }}
@@ -40,14 +36,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Prepare KUI_SOLUTION_WORK_PATH directory
-        run: mkdir -p ${{ env.KUI_SOLUTION_WORK_PATH }}
+        run: mkdir -p ${{ inputs.KUI_SOLUTION_WORK_PATH }}
       - name: Prepare KUI_SOLUTION_ARTIFACTS_PATH directory
-        run: mkdir -p ${{ env.KUI_SOLUTION_ARTIFACTS_PATH }}
+        run: mkdir -p ${{ inputs.KUI_SOLUTION_ARTIFACTS_PATH }}
       - name: Prepare KUI_ARTIFACT_RELEASE_PATH directory
-        run: mkdir -p ${{ env.KUI_ARTIFACT_RELEASE_PATH }}
+        run: mkdir -p ${{ inputs.KUI_ARTIFACT_RELEASE_PATH }}
       - name: Dotnet Clean
-        run: dotnet clean ${{ env.KUI_SOLUTION }}
+        run: dotnet clean ${{ inputs.KUI_SOLUTION }}
       - name: Dotnet Restore
-        run: dotnet restore ${{ env.KUI_SOLUTION }}
+        run: dotnet restore ${{ inputs.KUI_SOLUTION }}
       - name: Dotnet Build
-        run: dotnet build ${{ env.KUI_SOLUTION }} -c ${{ env.KUI_SOLUTION_BUILD_CONFIGURATION }} --no-restore
+        run: dotnet build ${{ inputs.KUI_SOLUTION }} -c ${{ inputs.KUI_SOLUTION_BUILD_CONFIGURATION }} --no-restore

@@ -13,33 +13,14 @@ permissions:
   id-token: write
   contents: read
 
-env:
-  KUI_SOLUTION: HttpPostExperiment.sln
-  KUI_SOLUTION_PROJECT: HttpPostExperiment.csproj
-  KUI_SOLUTION_BUILD_CONFIGURATION: Release
-  KUI_SOLUTION_TEST_PROJECT: ${{ github.workspace }}/tests/HttpTriggerPostExperimentTests/HttpTriggerPostExperimentTests.csproj
-  KUI_SOLUTION_SOURCE_PATH: ${{ github.workspace }}/src/functions/HttpPostExperiment
-  KUI_SOLUTION_WORK_PATH: ${{ github.workspace }}/http_post_exp_function_app
-  KUI_SOLUTION_BUILD_PATH: ${{ github.workspace }}/http_post_exp_function_app/build
-  KUI_SOLUTION_ARTIFACTS_PATH: ${{ github.workspace }}/artifacts
-
-  KUI_ARTIFACT_VERSION: 1.0.${{ github.run_number }}
-  KUI_ARTIFACT_RELEASE_PATH: ${{ github.workspace }}/release
-  KUI_ARTIFACT_ZIP_NAME: http-post-exp-fa-package
-
-  KUI_SCRIPT_STAGE_1: ${{ github.workspace }}/release/Scripts/http-post-exp-stage-1.sh
-  KUI_SCRIPT_STAGE_2: ${{ github.workspace }}/release/Scripts/http-post-exp-stage-2.sh
-  KUI_SCRIPT_STAGE_3: ${{ github.workspace }}/release/Scripts/http-post-exp-stage-3.sh
-  KUI_SCRIPT_STAGE_4: ${{ github.workspace }}/release/Scripts/http-post-exp-stage-4.sh
-
 jobs:
 
   build:
       uses: ./.github/workflows/build-azure-function.yml
-      secrets: inherit
       with:
-        KUI_SOLUTION_WORK_PATH: "${{ github.workspace }}/http_post_exp_function_app"
-        KUI_SOLUTION_ARTIFACTS_PATH: "${{ github.workspace }}/artifacts"
-        KUI_ARTIFACT_RELEASE_PATH: "${{ github.workspace }}/release"
-        KUI_SOLUTION: "HttpPostExperiment.sln"
-        KUI_SOLUTION_BUILD_CONFIGURATION: "Release"
+        KUI_SOLUTION: HttpPostExperiment.sln
+        KUI_SOLUTION_BUILD_CONFIGURATION: Release
+        KUI_SOLUTION_WORK_PATH: ${{ github.workspace }}/http_post_exp_function_app
+        KUI_SOLUTION_ARTIFACTS_PATH: ${{ github.workspace }}/artifacts
+        KUI_ARTIFACT_RELEASE_PATH: ${{ github.workspace }}/release
+      secrets: inherit
