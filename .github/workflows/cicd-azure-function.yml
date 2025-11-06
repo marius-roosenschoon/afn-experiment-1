@@ -17,6 +17,4 @@ jobs:
   release-dev:
     needs: build
     uses: ./.github/workflows/release-azure-function.yml
-    with:
-      environment: Development
     secrets: inherit
