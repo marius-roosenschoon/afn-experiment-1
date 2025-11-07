@@ -3,6 +3,10 @@ name: Build HttpTriggerPostExperiment
 on:
   workflow_call:
     inputs:
+      environment:
+        description: "Name of the environment to deploy"
+        required: true
+        type: string
       KUI_ARTIFACT_ZIP_NAME:
         required: true
         type: string

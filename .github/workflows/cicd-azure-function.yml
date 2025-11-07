@@ -23,8 +23,18 @@ jobs:
       KUI_ARTIFACT_ZIP_NAME: http-post-exp-fa-package
     secrets: inherit
 
-  release-tst:
+  approval-gate-tst:
     needs: release-dev
+    environment: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: approved
+        env:
+          ENV_NAME: Test
+        run: write-host "Approve for $($env.ENV_NAME)"
+
+  release-tst:
+    needs: approval-gate-tst
     uses: ./.github/workflows/release-azure-function-tst.yml
     with:
       KUI_ARTIFACT_ZIP_NAME: http-post-exp-fa-package
