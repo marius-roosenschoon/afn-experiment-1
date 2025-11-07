@@ -31,8 +31,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: approved
-        env:
-          ENV_NAME: Test
         run: write-host "Approve for $($env.ENV_NAME)"
 
   release-tst:
