@@ -15,12 +15,14 @@ jobs:
     uses: ./.github/workflows/build-azure-function.yml
     with:
       KUI_ARTIFACT_ZIP_NAME: http-post-exp-fa-package
+      environment: Development
 
   release-dev:
     needs: build
     uses: ./.github/workflows/release-azure-function-dev.yml
     with:
       KUI_ARTIFACT_ZIP_NAME: http-post-exp-fa-package
+      environment: Development
     secrets: inherit
 
   approval-gate-tst:
@@ -38,4 +40,5 @@ jobs:
     uses: ./.github/workflows/release-azure-function-tst.yml
     with:
       KUI_ARTIFACT_ZIP_NAME: http-post-exp-fa-package
+      environment: Test
     secrets: inherit
