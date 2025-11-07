@@ -31,7 +31,8 @@ jobs:
       KUI_RG: ${{ vars.KUI_TST_RG }}
     steps:
       - name: Release Environment
-        run: echo "Releasing to: ${{ inputs.environment }} "
+        run: |
+          echo "Releasing to: ${{ inputs.environment }}"
       - name: Download Release Artifact
         uses: actions/download-artifact@v4
         with:

@@ -8,6 +8,10 @@ on:
     types:
       - submitted
   workflow_dispatch:
+  
+defaults:
+  run:
+    shell: bash
 
 jobs:
 
@@ -49,7 +53,7 @@ jobs:
       - name: approved
         run: echo "Approve for Production"
 
-  release-tst:
+  release-prd:
     needs: approval-gate-prod
     uses: ./.github/workflows/release-azure-function-prd.yml
     with:
