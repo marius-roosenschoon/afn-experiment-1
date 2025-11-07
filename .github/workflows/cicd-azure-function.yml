@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: approved
-        run: write-host "Approve for Test"
+        run: echo "Approve for Test"
 
   release-tst:
     needs: approval-gate-tst
