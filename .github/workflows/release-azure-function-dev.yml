@@ -30,6 +30,8 @@ jobs:
       KUI_FUNCTION_APP_NAME: ${{ vars.KUI_DEV_FUNCTION_APP_01_NAME }}
       KUI_RG: ${{ vars.KUI_DEV_RG }}
     steps:
+      - name: Release Environment
+        run: echo "Releasing to: ${{ inputs.environment }} "
       - name: Download Release Artifact
         uses: actions/download-artifact@v4
         with:

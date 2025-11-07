@@ -24,11 +24,11 @@ jobs:
   release-dev:
     runs-on: ubuntu-latest
     env:
-      AZURE_CLIENT_ID: ${{ secrets.KUI_SPN_TST_CLIENT_ID }}
-      AZURE_CLIENT_SECRET: ${{ secrets.KUI_SPN_TST_CLIENT_SECRET }}
-      AZURE_TENANT_ID: ${{ secrets.KUI_SPN_TST_TENANT_ID }}
-      KUI_FUNCTION_APP_NAME: ${{ vars.KUI_TST_FUNCTION_APP_01_NAME }}
-      KUI_RG: ${{ vars.KUI_TST_RG }}
+      AZURE_CLIENT_ID: ${{ secrets.KUI_SPN_PRD_CLIENT_ID }}
+      AZURE_CLIENT_SECRET: ${{ secrets.KUI_SPN_PRD_CLIENT_SECRET }}
+      AZURE_TENANT_ID: ${{ secrets.KUI_SPN_PRD_TENANT_ID }}
+      KUI_FUNCTION_APP_NAME: ${{ vars.KUI_PRD_FUNCTION_APP_01_NAME }}
+      KUI_RG: ${{ vars.KUI_PRD_RG }}
     steps:
       - name: Release Environment
         run: echo "Releasing to: ${{ inputs.environment }} "

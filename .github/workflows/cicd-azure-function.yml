@@ -1,4 +1,4 @@
-name: CICD (Dev, Staging, Prod)
+name: CICD Build and release pipeline for (Development, Test, Production)
 
 on:
   push:
@@ -39,4 +39,20 @@ jobs:
     with:
       KUI_ARTIFACT_ZIP_NAME: http-post-exp-fa-package
       environment: Test
+    secrets: inherit
+
+  approval-gate-prod:
+    needs: release-tst
+    environment: Production
+    runs-on: ubuntu-latest
+    steps:
+      - name: approved
+        run: echo "Approve for Production"
+
+  release-tst:
+    needs: approval-gate-prod
+    uses: ./.github/workflows/release-azure-function-prd.yml
+    with:
+      KUI_ARTIFACT_ZIP_NAME: http-post-exp-fa-package
+      environment: Production
     secrets: inherit
