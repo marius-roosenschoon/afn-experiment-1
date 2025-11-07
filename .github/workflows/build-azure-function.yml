@@ -15,7 +15,6 @@ env:
   KUI_SOLUTION: HttpPostExperiment.sln
   KUI_SOLUTION_PROJECT: HttpPostExperiment.csproj
   KUI_SOLUTION_BUILD_CONFIGURATION: Release
-  KUI_SOLUTION_TEST_PROJECT: ${{ github.workspace }}/tests/HttpTriggerPostExperimentTests/HttpTriggerPostExperimentTests.csproj
   KUI_SOLUTION_SOURCE_PATH: ${{ github.workspace }}/src/functions/HttpPostExperiment
   KUI_SOLUTION_WORK_PATH: ${{ github.workspace }}/http_post_exp_function_app
   KUI_SOLUTION_BUILD_PATH: ${{ github.workspace }}/http_post_exp_function_app/build
@@ -46,8 +45,6 @@ jobs:
         run: dotnet restore ${{ env.KUI_SOLUTION }}
       - name: Dotnet Build
         run: dotnet build ${{ env.KUI_SOLUTION }} -c ${{ env.KUI_SOLUTION_BUILD_CONFIGURATION }} --no-restore
-      - name: Run Unit Tests
-        run: dotnet test ${{ env.KUI_SOLUTION_TEST_PROJECT }} --configuration ${{ env.KUI_SOLUTION_BUILD_CONFIGURATION }}
       - name: Copy function app files
         run: |
           mkdir -p ${{ env.KUI_SOLUTION_WORK_PATH }}/src/functions

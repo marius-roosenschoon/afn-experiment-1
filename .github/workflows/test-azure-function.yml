@@ -1,0 +1,48 @@
+name: Build HttpTriggerPostExperiment
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: "Name of the environment to deploy"
+        required: true
+        type: string
+      KUI_ARTIFACT_ZIP_NAME:
+        required: true
+        type: string
+
+env:
+  KUI_SOLUTION: HttpPostExperiment.sln
+  KUI_SOLUTION_BUILD_CONFIGURATION: Release
+  KUI_SOLUTION_TEST_PROJECT: ${{ github.workspace }}/tests/HttpTriggerPostExperimentTests/HttpTriggerPostExperimentTests.csproj
+  KUI_SOLUTION_WORK_PATH: ${{ github.workspace }}/http_post_exp_function_app
+
+  KUI_ARTIFACT_ZIP_NAME: ${{ inputs.KUI_ARTIFACT_ZIP_NAME }}
+  KUI_ARTIFACT_VERSION: 1.0.${{ github.run_number }}
+  KUI_ARTIFACT_RELEASE_PATH: ${{ github.workspace }}/release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      name: Development
+    steps:
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Prepare KUI_SOLUTION_WORK_PATH directory
+        run: mkdir -p ${{ env.KUI_SOLUTION_WORK_PATH }}
+      - name: Prepare KUI_ARTIFACT_RELEASE_PATH directory
+        run: mkdir -p ${{ env.KUI_ARTIFACT_RELEASE_PATH }}
+      - name: Dotnet Clean
+        run: dotnet clean ${{ env.KUI_SOLUTION }}
+      - name: Dotnet Restore
+        run: dotnet restore ${{ env.KUI_SOLUTION }}
+      - name: Dotnet Build
+        run: dotnet build ${{ env.KUI_SOLUTION }} -c ${{ env.KUI_SOLUTION_BUILD_CONFIGURATION }} --no-restore
+      - name: Run Unit Tests
+        run: dotnet test ${{ env.KUI_SOLUTION_TEST_PROJECT }} --configuration ${{ env.KUI_SOLUTION_BUILD_CONFIGURATION }}
+

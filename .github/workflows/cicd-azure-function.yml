@@ -15,7 +15,15 @@ defaults:
 
 jobs:
 
+  unit-test:
+    uses: ./.github/workflows/test-azure-function.yml
+    with:
+      KUI_ARTIFACT_ZIP_NAME: http-post-exp-fa-package
+      environment: Development
+    secrets: inherit
+
   build:
+    needs: unit-test
     uses: ./.github/workflows/build-azure-function.yml
     with:
       KUI_ARTIFACT_ZIP_NAME: http-post-exp-fa-package
