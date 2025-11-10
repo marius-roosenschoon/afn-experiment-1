@@ -34,8 +34,8 @@ jobs:
           # echo "PR_DEVELOP=${{ github.event_name == 'pull_request_review' && github.event.pull_request.base.ref == 'develop' && 'true' }}" >> $GITHUB_OUTPUT
           # echo "PR_MAIN=${{ github.event_name == 'pull_request_review' && github.event.pull_request.base.ref == 'main' && 'true' }}" >> $GITHUB_OUTPUT
           echo "SKIP_RELEASES=false" >> $GITHUB_OUTPUT
-          echo "SKIP_TST_RELEASE=true" >> $GITHUB_OUTPUT
-          echo "SKIP_PRD_RELEASE=true }}" >> $GITHUB_OUTPUT
+          echo "SKIP_TST_RELEASE=false" >> $GITHUB_OUTPUT
+          echo "SKIP_PRD_RELEASE=true" >> $GITHUB_OUTPUT
           echo "PR_DEVELOP=true" >> $GITHUB_OUTPUT
           echo "PR_MAIN=false" >> $GITHUB_OUTPUT
 
@@ -59,7 +59,6 @@ jobs:
       - name: Settings
         run: |
           echo "unit-test stage - add your steps here"
-
 
   build:
     needs: [unit-test]
