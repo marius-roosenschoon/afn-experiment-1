@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 env:
-  SKIP_RELEASES: ${{ github.event_name == 'push' }}
+  SKIP_RELEASES: ${{ github.event_name == 'push' || 'false' }}
   SKIP_TST_RELEASE: ${{ vars.SKIP_TST_RELEASE || 'true' }}
   SKIP_PRD_RELEASE: ${{ vars.SKIP_PRD_RELEASE || 'true' }}
   PR_DEVELOP: ${{ github.event_name == 'pull_request_review' && github.event.pull_request.base.ref == 'develop' }}
@@ -51,13 +51,13 @@ jobs:
       environment: Development
 
   skip-releases:
-    if: ${{ vars.SKIP_RELEASES == 'true' }}
-    needs: unit-test
+    if: ${{ env.SKIP_RELEASES == 'true' }} 
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Check for Skipping releases
         run: |
-          echo "SKIP_RELEASES: ${{ vars.SKIP_RELEASES }}"
+          echo "SKIP_RELEASES: ${{ env.SKIP_RELEASES }}"
 
   release-dev:
     needs: skip-releases
@@ -68,7 +68,7 @@ jobs:
     secrets: inherit
 
   skip-release-tst:
-    if: ${{ (vars.KUI_SKIP_TST_RELEASE != 'false') && (vars.SKIP_RELEASES != 'true') }}
+    if: ${{ (vars.KUI_SKIP_TST_RELEASE != 'false') && (github.event_name == 'push') }}
     needs: release-dev
     runs-on: ubuntu-latest
     steps:
