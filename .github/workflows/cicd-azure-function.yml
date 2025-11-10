@@ -10,8 +10,8 @@ on:
   workflow_dispatch:
 
 env:
-  SKIP_TST_RELEASE: ${{ vars.SKIP_TST_RELEASE || 'true' }}
-  SKIP_PRD_RELEASE: ${{ vars.SKIP_PRD_RELEASE || 'true' }}
+  KUI_SKIP_TST_RELEASE: ${{ vars.KUI_SKIP_TST_RELEASE || 'true' }}
+  KUI_SKIP_PRD_RELEASE: ${{ vars.KUI_SKIP_PRD_RELEASE || 'true' }}
 
 defaults:
   run:
@@ -42,7 +42,7 @@ jobs:
     secrets: inherit
 
   approval-gate-tst:
-    if: ${{ vars.SKIP_TST_RELEASE == 'false' }}
+    if: ${{ vars.KUI_SKIP_TST_RELEASE == 'false' }}
     needs: release-dev
     environment: Test
     runs-on: ubuntu-latest
@@ -51,7 +51,7 @@ jobs:
         run: echo "Approve for Test"
 
   release-tst:
-    if: ${{ vars.SKIP_TST_RELEASE == 'false' }}
+    if: ${{ vars.KUI_SKIP_TST_RELEASE == 'false' }}
     needs: approval-gate-tst
     uses: ./.github/workflows/release-azure-function-tst.yml
     with:
@@ -60,7 +60,7 @@ jobs:
     secrets: inherit
 
   approval-gate-prod:
-    if: ${{ vars.SKIP_PRD_RELEASE == 'false' }}
+    if: ${{ vars.KUI_SKIP_PRD_RELEASE == 'false' }}
     needs: release-tst
     environment: Production
     runs-on: ubuntu-latest
@@ -69,7 +69,7 @@ jobs:
         run: echo "Approve for Production"
 
   release-prd:
-    if: ${{ vars.SKIP_PRD_RELEASE == 'false' }}
+    if: ${{ vars.KUI_SKIP_PRD_RELEASE == 'false' }}
     needs: approval-gate-prod
     uses: ./.github/workflows/release-azure-function-prd.yml
     with:
