@@ -33,18 +33,18 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
-#      - name: Checkout code
-#        uses: actions/checkout@v4
-#      - name: Prepare KUI_SOLUTION_WORK_PATH directory
-#        run: mkdir -p ${{ env.KUI_SOLUTION_WORK_PATH }}
-#      - name: Prepare KUI_ARTIFACT_RELEASE_PATH directory
-#        run: mkdir -p ${{ env.KUI_ARTIFACT_RELEASE_PATH }}
-#      - name: Dotnet Clean
-#        run: dotnet clean ${{ env.KUI_SOLUTION }}
-#      - name: Dotnet Restore
-#        run: dotnet restore ${{ env.KUI_SOLUTION }}
-#      - name: Dotnet Build
-#        run: dotnet build ${{ env.KUI_SOLUTION }} -c ${{ env.KUI_SOLUTION_BUILD_CONFIGURATION }} --no-restore
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Prepare KUI_SOLUTION_WORK_PATH directory
+        run: mkdir -p ${{ env.KUI_SOLUTION_WORK_PATH }}
+      - name: Prepare KUI_ARTIFACT_RELEASE_PATH directory
+        run: mkdir -p ${{ env.KUI_ARTIFACT_RELEASE_PATH }}
+      - name: Dotnet Clean
+        run: dotnet clean ${{ env.KUI_SOLUTION }}
+      - name: Dotnet Restore
+        run: dotnet restore ${{ env.KUI_SOLUTION }}
+      - name: Dotnet Build
+        run: dotnet build ${{ env.KUI_SOLUTION }} -c ${{ env.KUI_SOLUTION_BUILD_CONFIGURATION }} --no-restore
       - name: Copy function app files
         run: |
           mkdir -p ${{ env.KUI_SOLUTION_WORK_PATH }}/src/functions
