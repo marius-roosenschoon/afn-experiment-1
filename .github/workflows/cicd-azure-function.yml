@@ -24,7 +24,17 @@ defaults:
 
 jobs:
 
+  init-vars:
+    runs-on: ubuntu-latest
+    outputs:
+      SKIP_RELEASES: ${{ steps.set-vars.outputs.SKIP_RELEASES }}
+    steps:
+      - id: set-vars
+        run: |
+          echo "SKIP_RELEASES=true" >> $GITHUB_OUTPUT
+
   check-settings:
+    needs: init-vars
     runs-on: ubuntu-latest
     steps:
       - name: Check pre-execution settings
