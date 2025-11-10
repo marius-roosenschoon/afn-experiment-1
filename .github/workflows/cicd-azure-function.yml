@@ -42,7 +42,7 @@ jobs:
       environment: Development
     secrets: inherit
 
-  release-tst-skip-check:
+  skip-release-tst:
     if: ${{ vars.KUI_SKIP_TST_RELEASE != 'false' }}
     needs: release-dev
     runs-on: ubuntu-latest
@@ -69,7 +69,7 @@ jobs:
       environment: Test
     secrets: inherit
 
-  release-prd-skip-check:
+  skip-release-prd:
     if: ${{ vars.KUI_SKIP_PRD_RELEASE != 'false' }}
     needs: release-tst
     runs-on: ubuntu-latest
