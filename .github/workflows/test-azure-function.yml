@@ -30,8 +30,6 @@ jobs:
           echo "KUI_SOLUTION: ${{ inputs.KUI_SOLUTION }}"
           echo "KUI_SOLUTION_BUILD_CONFIGURATION: ${{ inputs.KUI_SOLUTION_BUILD_CONFIGURATION }}"
           echo "KUI_SOLUTION_TEST_PROJECT: ${{ env.KUI_SOLUTION_TEST_PROJECT }}"
-          echo "KUI_ARTIFACT_VERSION: ${{ inputs.KUI_ARTIFACT_VERSION }}"
-          echo "KUI_ARTIFACT_RELEASE_PATH: ${{ inputs.KUI_ARTIFACT_RELEASE_PATH }}"
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:

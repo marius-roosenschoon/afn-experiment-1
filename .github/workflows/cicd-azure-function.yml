@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - develop
+      - main
   pull_request_review:
     types:
       - submitted
@@ -10,8 +11,11 @@ on:
   workflow_dispatch:
 
 env:
+  SKIP_RELEASES: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main') }}
   SKIP_TST_RELEASE: ${{ vars.SKIP_TST_RELEASE || 'true' }}
   SKIP_PRD_RELEASE: ${{ vars.SKIP_PRD_RELEASE || 'true' }}
+  PR_DEVELOP: ${{ github.event_name == 'pull_request_review' && github.event.pull_request.base.ref == 'develop' }}
+  PR_MAIN: ${{ github.event_name == 'pull_request_review' && github.event.pull_request.base.ref == 'main' }}
 
 defaults:
   run:
@@ -19,7 +23,19 @@ defaults:
 
 jobs:
 
+  check-settings:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check pre-execution settings
+        run: |
+          echo "SKIP_RELEASES: ${{ vars.SKIP_RELEASES }}"
+          echo "SKIP_TST_RELEASE: ${{ vars.SKIP_TST_RELEASE }}"
+          echo "SKIP_PRD_RELEASE: ${{ vars.SKIP_PRD_RELEASE }}"
+          echo "PR_DEVELOP: ${{ vars.PR_DEVELOP }}"
+          echo "PR_MAIN: ${{ vars.PR_MAIN }}"
+
   unit-test:
+    needs: check-settings
     uses: ./.github/workflows/test-azure-function.yml
     with:
       KUI_SOLUTION: HttpPostExperiment.sln
@@ -33,6 +49,15 @@ jobs:
     with:
       KUI_ARTIFACT_ZIP_NAME: http-post-exp-fa-package
       environment: Development
+
+  skip-releases:
+    if: ${{ vars.SKIP_RELEASES != 'true' }}
+    needs: unit-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for Skipping releases
+        run: |
+          echo "SKIP_RELEASES: ${{ vars.SKIP_RELEASES }}"
 
   release-dev:
     needs: build
