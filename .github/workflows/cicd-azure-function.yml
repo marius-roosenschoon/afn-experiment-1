@@ -25,7 +25,7 @@ jobs:
       PR_DEVELOP: ${{ steps.set-vars.outputs.PR_DEVELOP }}
       PR_MAIN: ${{ steps.set-vars.outputs.PR_MAIN }}
     steps:
-      - id: [set-vars]
+      - id: set-vars
         run: |
           echo "Setting pipeline variables"
           # echo "SKIP_RELEASES=${{ github.event_name == 'push' && 'true' || 'false' }}" >> $GITHUB_OUTPUT
