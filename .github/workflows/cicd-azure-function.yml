@@ -34,8 +34,8 @@ jobs:
           echo "SKIP_RELEASES: ${{ needs.init-vars.outputs.SKIP_RELEASES }}"
 
   skip-releases:
-    if: ${{ needs.init-vars.outputs.SKIP_RELEASES == 'true' }} 
-    needs: check-settings
+    needs: [init-vars, check-settings]
+    if: ${{ needs.init-vars.outputs.SKIP_RELEASES == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Check for Skipping releases
