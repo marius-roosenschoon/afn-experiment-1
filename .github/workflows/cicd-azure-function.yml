@@ -54,46 +54,47 @@ jobs:
 
   unit-test:
     needs: [check-settings]
-    # uses: ./.github/workflows/test-azure-function.yml
-    with:
-      KUI_SOLUTION: HttpPostExperiment.sln
-      KUI_SOLUTION_BUILD_CONFIGURATION: Release
-      environment: Development
-    secrets: inherit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Settings
+        run: |
+          echo "unit-test stage - add your steps here"
+
 
   build:
     needs: [unit-test]
-    # uses: ./.github/workflows/build-azure-function.yml
-    with:
-      KUI_ARTIFACT_ZIP_NAME: http-post-exp-fa-package
-      environment: Development
+    runs-on: ubuntu-latest
+    steps:
+      - name: Settings
+        run: |
+          echo "build stage - add your steps here"
 
   skip-releases:
     needs: [build, init-vars]
     if: ${{ needs.init-vars.outputs.SKIP_RELEASES != 'false' }}
     runs-on: ubuntu-latest
     steps:
-      - name: Check for Skipping releases
+      - name: Settings
         run: |
-          echo "SKIP_RELEASES: ${{ needs.init-vars.outputs.SKIP_RELEASES }}"
+          echo "skip-releases stage - add your steps here"
 
   release-dev:
     needs: [build, init-vars]
     if: ${{ needs.init-vars.outputs.SKIP_RELEASES == 'false' }}
-    # uses: ./.github/workflows/release-azure-function-dev.yml
-    with:
-      KUI_ARTIFACT_ZIP_NAME: http-post-exp-fa-package
-      environment: Development
-    secrets: inherit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Settings
+        run: |
+          echo "build stage - add your steps here"
 
   skip-release-tst:
     needs: [release-dev, init-vars]
     if: ${{ needs.init-vars.outputs.SKIP_TST_RELEASE != 'false' }}
     runs-on: ubuntu-latest
     steps:
-      - name: Check for Skipping TST
+      - name: Check for Skipping PRD
         run: |
-          echo "TST release check KUI_SKIP_TST_RELEASE: ${{ vars.KUI_SKIP_TST_RELEASE }}"
+          echo "TST release check SKIP_TST_RELEASE: ${{ needs.init-vars.outputs.SKIP_TST_RELEASE }}"
 
   approval-gate-tst:
     needs: [release-dev, init-vars]
@@ -107,24 +108,24 @@ jobs:
   release-tst:
     needs: [approval-gate-tst, init-vars]
     if: ${{ needs.init-vars.outputs.SKIP_TST_RELEASE == 'false' }}
-    # uses: ./.github/workflows/release-azure-function-tst.yml
-    with:
-      KUI_ARTIFACT_ZIP_NAME: http-post-exp-fa-package
-      environment: Test
-    secrets: inherit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Settings
+        run: |
+          echo "release-tst stage - add your steps here"
 
   skip-release-prd:
     needs: [release-tst, init-vars]
-    if: ${{ needs.init-vars.outputs.KUI_SKIP_PRD_RELEASE != 'false' }}
+    if: ${{ needs.init-vars.outputs.SKIP_PRD_RELEASE != 'false' }}
     runs-on: ubuntu-latest
     steps:
       - name: Check for Skipping PRD
         run: |
-          echo "PRD release check KUI_SKIP_PRD_RELEASE: ${{ vars.KUI_SKIP_PRD_RELEASE }}"
+          echo "PRD release check SKIP_PRD_RELEASE: ${{ needs.init-vars.outputs.SKIP_PRD_RELEASE }}"
 
   approval-gate-prod:
     needs: [release-tst, init-vars]
-    if: ${{ needs.init-vars.outputs.KUI_SKIP_PRD_RELEASE == 'false' }}
+    if: ${{ needs.init-vars.outputs.SKIP_PRD_RELEASE == 'false' }}
     environment: Production
     runs-on: ubuntu-latest
     steps:
@@ -133,9 +134,9 @@ jobs:
 
   release-prd:
     needs: [approval-gate-prod, init-vars]
-    if: ${{ needs.init-vars.outputs.KUI_SKIP_PRD_RELEASE == 'false' }}
-    # uses: ./.github/workflows/release-azure-function-prd.yml
-    with:
-      KUI_ARTIFACT_ZIP_NAME: http-post-exp-fa-package
-      environment: Production
-    secrets: inherit
+    if: ${{ needs.init-vars.outputs.SKIP_PRD_RELEASE == 'false' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Settings
+        run: |
+          echo "release-prd stage - add your steps here"
