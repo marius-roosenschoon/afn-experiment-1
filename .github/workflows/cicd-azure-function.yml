@@ -54,7 +54,7 @@ jobs:
 
   unit-test:
     needs: [check-settings]
-    uses: ./.github/workflows/test-azure-function.yml
+    # uses: ./.github/workflows/test-azure-function.yml
     with:
       KUI_SOLUTION: HttpPostExperiment.sln
       KUI_SOLUTION_BUILD_CONFIGURATION: Release
@@ -62,17 +62,80 @@ jobs:
     secrets: inherit
 
   build:
-    needs: [unit-test, check-settings]
-    uses: ./.github/workflows/build-azure-function.yml
+    needs: [unit-test]
+    # uses: ./.github/workflows/build-azure-function.yml
     with:
       KUI_ARTIFACT_ZIP_NAME: http-post-exp-fa-package
       environment: Development
 
   skip-releases:
     needs: [build, init-vars]
-    if: ${{ needs.init-vars.outputs.SKIP_RELEASES == 'false' }}
+    if: ${{ needs.init-vars.outputs.SKIP_RELEASES != 'false' }}
     runs-on: ubuntu-latest
     steps:
       - name: Check for Skipping releases
         run: |
           echo "SKIP_RELEASES: ${{ needs.init-vars.outputs.SKIP_RELEASES }}"
+
+  release-dev:
+    needs: [build, init-vars]
+    if: ${{ needs.init-vars.outputs.SKIP_RELEASES == 'false' }}
+    # uses: ./.github/workflows/release-azure-function-dev.yml
+    with:
+      KUI_ARTIFACT_ZIP_NAME: http-post-exp-fa-package
+      environment: Development
+    secrets: inherit
+
+  skip-release-tst:
+    needs: [release-dev, init-vars]
+    if: ${{ needs.init-vars.outputs.SKIP_TST_RELEASE != 'false' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for Skipping TST
+        run: |
+          echo "TST release check KUI_SKIP_TST_RELEASE: ${{ vars.KUI_SKIP_TST_RELEASE }}"
+
+  approval-gate-tst:
+    needs: [release-dev, init-vars]
+    if: ${{ needs.init-vars.outputs.SKIP_TST_RELEASE == 'false' }}
+    environment: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: approved
+        run: echo "Approve for Test"
+
+  release-tst:
+    needs: [approval-gate-tst, init-vars]
+    if: ${{ needs.init-vars.outputs.SKIP_TST_RELEASE == 'false' }}
+    # uses: ./.github/workflows/release-azure-function-tst.yml
+    with:
+      KUI_ARTIFACT_ZIP_NAME: http-post-exp-fa-package
+      environment: Test
+    secrets: inherit
+
+  skip-release-prd:
+    needs: [release-tst, init-vars]
+    if: ${{ needs.init-vars.outputs.KUI_SKIP_PRD_RELEASE != 'false' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for Skipping PRD
+        run: |
+          echo "PRD release check KUI_SKIP_PRD_RELEASE: ${{ vars.KUI_SKIP_PRD_RELEASE }}"
+
+  approval-gate-prod:
+    needs: [release-tst, init-vars]
+    if: ${{ needs.init-vars.outputs.KUI_SKIP_PRD_RELEASE == 'false' }}
+    environment: Production
+    runs-on: ubuntu-latest
+    steps:
+      - name: approved
+        run: echo "Approve for Production"
+
+  release-prd:
+    needs: [approval-gate-prod, init-vars]
+    if: ${{ needs.init-vars.outputs.KUI_SKIP_PRD_RELEASE == 'false' }}
+    # uses: ./.github/workflows/release-azure-function-prd.yml
+    with:
+      KUI_ARTIFACT_ZIP_NAME: http-post-exp-fa-package
+      environment: Production
+    secrets: inherit
