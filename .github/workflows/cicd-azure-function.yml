@@ -25,17 +25,22 @@ jobs:
       PR_DEVELOP: ${{ steps.set-vars.outputs.PR_DEVELOP }}
       PR_MAIN: ${{ steps.set-vars.outputs.PR_MAIN }}
     steps:
-      - id: set-vars
+      - id: [set-vars]
         run: |
           echo "Setting pipeline variables"
-          echo "SKIP_RELEASES=${{ github.event_name == 'push' && 'true' || 'false' }}" >> $GITHUB_OUTPUT
-          echo "SKIP_TST_RELEASE=${{ vars.SKIP_TST_RELEASE || 'true' }}" >> $GITHUB_OUTPUT
-          echo "SKIP_PRD_RELEASE=${{ vars.SKIP_PRD_RELEASE || 'true' }}" >> $GITHUB_OUTPUT
-          echo "PR_DEVELOP=${{ github.event_name == 'pull_request_review' && github.event.pull_request.base.ref == 'develop' && 'true' }}" >> $GITHUB_OUTPUT
-          echo "PR_MAIN=${{ github.event_name == 'pull_request_review' && github.event.pull_request.base.ref == 'main' && 'true' }}" >> $GITHUB_OUTPUT
- 
+          # echo "SKIP_RELEASES=${{ github.event_name == 'push' && 'true' || 'false' }}" >> $GITHUB_OUTPUT
+          # echo "SKIP_TST_RELEASE=${{ vars.SKIP_TST_RELEASE || 'true' }}" >> $GITHUB_OUTPUT
+          # echo "SKIP_PRD_RELEASE=${{ vars.SKIP_PRD_RELEASE || 'true' }}" >> $GITHUB_OUTPUT
+          # echo "PR_DEVELOP=${{ github.event_name == 'pull_request_review' && github.event.pull_request.base.ref == 'develop' && 'true' }}" >> $GITHUB_OUTPUT
+          # echo "PR_MAIN=${{ github.event_name == 'pull_request_review' && github.event.pull_request.base.ref == 'main' && 'true' }}" >> $GITHUB_OUTPUT
+          echo "SKIP_RELEASES=false" >> $GITHUB_OUTPUT
+          echo "SKIP_TST_RELEASE=true" >> $GITHUB_OUTPUT
+          echo "SKIP_PRD_RELEASE=true }}" >> $GITHUB_OUTPUT
+          echo "PR_DEVELOP=true" >> $GITHUB_OUTPUT
+          echo "PR_MAIN=false" >> $GITHUB_OUTPUT
+
   check-settings:
-    needs: init-vars
+    needs: [init-vars]
     runs-on: ubuntu-latest
     steps:
       - name: Check pre-execution settings
@@ -47,19 +52,27 @@ jobs:
           echo "PR_DEVELOP: ${{ needs.init-vars.outputs.PR_DEVELOP }}"
           echo "PR_MAIN: ${{ needs.init-vars.outputs.PR_MAIN }}"
 
+  unit-test:
+    needs: [check-settings]
+    uses: ./.github/workflows/test-azure-function.yml
+    with:
+      KUI_SOLUTION: HttpPostExperiment.sln
+      KUI_SOLUTION_BUILD_CONFIGURATION: Release
+      environment: Development
+    secrets: inherit
+
+  build:
+    needs: [unit-test, check-settings]
+    uses: ./.github/workflows/build-azure-function.yml
+    with:
+      KUI_ARTIFACT_ZIP_NAME: http-post-exp-fa-package
+      environment: Development
+
   skip-releases:
-    needs: [init-vars, check-settings]
-    if: ${{ needs.init-vars.outputs.SKIP_RELEASES != 'true' }}
+    needs: [build, init-vars]
+    if: ${{ needs.init-vars.outputs.SKIP_RELEASES == 'false' }}
     runs-on: ubuntu-latest
     steps:
       - name: Check for Skipping releases
         run: |
           echo "SKIP_RELEASES: ${{ needs.init-vars.outputs.SKIP_RELEASES }}"
-
-  release-dev:
-    needs: [skip-releases, check-settings]
-    runs-on: ubuntu-latest
-    steps:
-      - name: TEMP RELEASE DEV
-        run: |
-          echo "release-dev executed"
