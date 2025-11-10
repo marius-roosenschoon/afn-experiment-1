@@ -7,17 +7,15 @@ on:
         description: "Name of the environment to deploy"
         required: true
         type: string
-      KUI_ARTIFACT_ZIP_NAME:
+      KUI_SOLUTION:
+        required: true
+        type: string
+      KUI_SOLUTION_BUILD_CONFIGURATION:
         required: true
         type: string
 
 env:
-  KUI_SOLUTION: HttpPostExperiment.sln
-  KUI_SOLUTION_BUILD_CONFIGURATION: Release
   KUI_SOLUTION_TEST_PROJECT: ${{ github.workspace }}/tests/HttpTriggerPostExperimentTests/HttpTriggerPostExperimentTests.csproj
-  KUI_SOLUTION_WORK_PATH: ${{ github.workspace }}/http_post_exp_function_app
-
-  KUI_ARTIFACT_ZIP_NAME: ${{ inputs.KUI_ARTIFACT_ZIP_NAME }}
   KUI_ARTIFACT_VERSION: 1.0.${{ github.run_number }}
   KUI_ARTIFACT_RELEASE_PATH: ${{ github.workspace }}/release
 
@@ -27,6 +25,13 @@ jobs:
     env:
       name: Development
     steps:
+      - name: Check Variables Setup
+        run: |
+          echo "KUI_SOLUTION: ${{ inputs.KUI_SOLUTION }}"
+          echo "KUI_SOLUTION_BUILD_CONFIGURATION: ${{ inputs.KUI_SOLUTION_BUILD_CONFIGURATION }}"
+          echo "KUI_SOLUTION_TEST_PROJECT: ${{ env.KUI_SOLUTION_TEST_PROJECT }}"
+          echo "KUI_ARTIFACT_VERSION: ${{ inputs.KUI_ARTIFACT_VERSION }}"
+          echo "KUI_ARTIFACT_RELEASE_PATH: ${{ inputs.KUI_ARTIFACT_RELEASE_PATH }}"
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
@@ -34,11 +39,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Dotnet Clean
-        run: dotnet clean ${{ env.KUI_SOLUTION }}
+        run: dotnet clean ${{ inputs.KUI_SOLUTION }}
       - name: Dotnet Restore
-        run: dotnet restore ${{ env.KUI_SOLUTION }}
+        run: dotnet restore ${{ inputs.KUI_SOLUTION }}
       - name: Dotnet Build
-        run: dotnet build ${{ env.KUI_SOLUTION }} -c ${{ env.KUI_SOLUTION_BUILD_CONFIGURATION }} --no-restore
+        run: dotnet build ${{ inputs.KUI_SOLUTION }} -c ${{ inputs.KUI_SOLUTION_BUILD_CONFIGURATION }} --no-restore
       - name: Run Unit Tests
-        run: dotnet test ${{ env.KUI_SOLUTION_TEST_PROJECT }} --configuration ${{ env.KUI_SOLUTION_BUILD_CONFIGURATION }}
+        run: dotnet test ${{ env.KUI_SOLUTION_TEST_PROJECT }} --configuration ${{ inputs.KUI_SOLUTION_BUILD_CONFIGURATION }}
 
