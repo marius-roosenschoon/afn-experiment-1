@@ -20,10 +20,19 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       SKIP_RELEASES: ${{ steps.set-vars.outputs.SKIP_RELEASES }}
+      SKIP_TST_RELEASE: ${{ steps.set-vars.outputs.SKIP_TST_RELEASE }}
+      SKIP_PRD_RELEASE: ${{ steps.set-vars.outputs.SKIP_PRD_RELEASE }}
+      PR_DEVELOP: ${{ steps.set-vars.outputs.PR_DEVELOP }}
+      PR_MAIN: ${{ steps.set-vars.outputs.PR_MAIN }}
     steps:
       - id: set-vars
         run: |
+          echo "Setting pipeline variables"
           echo "SKIP_RELEASES=${{ github.event_name == 'push' && 'true' || 'false' }}" >> $GITHUB_OUTPUT
+          echo "SKIP_TST_RELEASE=${{ vars.SKIP_TST_RELEASE || 'true' }}" >> $GITHUB_OUTPUT
+          echo "SKIP_PRD_RELEASE=${{ vars.SKIP_PRD_RELEASE || 'true' }}" >> $GITHUB_OUTPUT
+          echo "PR_DEVELOP=${{ github.event_name == 'pull_request_review' && github.event.pull_request.base.ref == 'develop' && 'true' }}" >> $GITHUB_OUTPUT
+          echo "PR_MAIN=${{ github.event_name == 'pull_request_review' && github.event.pull_request.base.ref == 'main' && 'true' }}" >> $GITHUB_OUTPUT
  
   check-settings:
     needs: init-vars
@@ -31,7 +40,12 @@ jobs:
     steps:
       - name: Check pre-execution settings
         run: |
+          echo "Checking pipeline variables"
           echo "SKIP_RELEASES: ${{ needs.init-vars.outputs.SKIP_RELEASES }}"
+          echo "SKIP_TST_RELEASE: ${{ needs.init-vars.outputs.SKIP_TST_RELEASE }}"
+          echo "SKIP_PRD_RELEASE: ${{ needs.init-vars.outputs.SKIP_PRD_RELEASE }}"
+          echo "PR_DEVELOP: ${{ needs.init-vars.outputs.PR_DEVELOP }}"
+          echo "PR_MAIN: ${{ needs.init-vars.outputs.PR_MAIN }}"
 
   skip-releases:
     needs: [init-vars, check-settings]
@@ -43,7 +57,7 @@ jobs:
           echo "SKIP_RELEASES: ${{ needs.init-vars.outputs.SKIP_RELEASES }}"
 
   release-dev:
-    needs: skip-releases
+    needs: [skip-releases, check-settings]
     runs-on: ubuntu-latest
     steps:
       - name: TEMP RELEASE DEV
