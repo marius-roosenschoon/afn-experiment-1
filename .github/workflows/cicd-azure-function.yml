@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 env:
-  SKIP_RELEASES: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main') }}
+  SKIP_RELEASES: ${{ github.event_name == 'push' }}
   SKIP_TST_RELEASE: ${{ vars.SKIP_TST_RELEASE || 'true' }}
   SKIP_PRD_RELEASE: ${{ vars.SKIP_PRD_RELEASE || 'true' }}
   PR_DEVELOP: ${{ github.event_name == 'pull_request_review' && github.event.pull_request.base.ref == 'develop' }}
@@ -28,11 +28,11 @@ jobs:
     steps:
       - name: Check pre-execution settings
         run: |
-          echo "SKIP_RELEASES: ${{ vars.SKIP_RELEASES }}"
-          echo "SKIP_TST_RELEASE: ${{ vars.SKIP_TST_RELEASE }}"
-          echo "SKIP_PRD_RELEASE: ${{ vars.SKIP_PRD_RELEASE }}"
-          echo "PR_DEVELOP: ${{ vars.PR_DEVELOP }}"
-          echo "PR_MAIN: ${{ vars.PR_MAIN }}"
+          echo "SKIP_RELEASES: ${{ env.SKIP_RELEASES }}"
+          echo "SKIP_TST_RELEASE: ${{ env.SKIP_TST_RELEASE }}"
+          echo "SKIP_PRD_RELEASE: ${{ env.SKIP_PRD_RELEASE }}"
+          echo "PR_DEVELOP: ${{ env.PR_DEVELOP }}"
+          echo "PR_MAIN: ${{ env.PR_MAIN }}"
 
   unit-test:
     needs: check-settings
@@ -51,7 +51,7 @@ jobs:
       environment: Development
 
   skip-releases:
-    if: ${{ vars.SKIP_RELEASES != 'true' }}
+    if: ${{ vars.SKIP_RELEASES == 'true' }}
     needs: unit-test
     runs-on: ubuntu-latest
     steps:
@@ -60,7 +60,7 @@ jobs:
           echo "SKIP_RELEASES: ${{ vars.SKIP_RELEASES }}"
 
   release-dev:
-    needs: build
+    needs: skip-releases
     uses: ./.github/workflows/release-azure-function-dev.yml
     with:
       KUI_ARTIFACT_ZIP_NAME: http-post-exp-fa-package
@@ -68,7 +68,7 @@ jobs:
     secrets: inherit
 
   skip-release-tst:
-    if: ${{ vars.KUI_SKIP_TST_RELEASE != 'false' }}
+    if: ${{ (vars.KUI_SKIP_TST_RELEASE != 'false') && (vars.SKIP_RELEASES != 'true') }}
     needs: release-dev
     runs-on: ubuntu-latest
     steps:
