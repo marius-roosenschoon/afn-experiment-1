@@ -28,16 +28,11 @@ jobs:
       - id: set-vars
         run: |
           echo "Setting pipeline variables"
-          # echo "SKIP_RELEASES=${{ github.event_name == 'push' && 'true' || 'false' }}" >> $GITHUB_OUTPUT
-          # echo "SKIP_TST_RELEASE=${{ vars.SKIP_TST_RELEASE || 'true' }}" >> $GITHUB_OUTPUT
-          # echo "SKIP_PRD_RELEASE=${{ vars.SKIP_PRD_RELEASE || 'true' }}" >> $GITHUB_OUTPUT
-          # echo "PR_DEVELOP=${{ github.event_name == 'pull_request_review' && github.event.pull_request.base.ref == 'develop' && 'true' }}" >> $GITHUB_OUTPUT
-          # echo "PR_MAIN=${{ github.event_name == 'pull_request_review' && github.event.pull_request.base.ref == 'main' && 'true' }}" >> $GITHUB_OUTPUT
-          echo "SKIP_RELEASES=false" >> $GITHUB_OUTPUT
-          echo "SKIP_TST_RELEASE=false" >> $GITHUB_OUTPUT
-          echo "SKIP_PRD_RELEASE=false" >> $GITHUB_OUTPUT
-          echo "PR_DEVELOP=false" >> $GITHUB_OUTPUT
-          echo "PR_MAIN=true" >> $GITHUB_OUTPUT
+          echo "SKIP_RELEASES=${{ github.event_name == 'push' && 'true' || 'false' }}" >> $GITHUB_OUTPUT
+          echo "SKIP_TST_RELEASE=${{ vars.SKIP_TST_RELEASE || 'true' }}" >> $GITHUB_OUTPUT
+          echo "SKIP_PRD_RELEASE=${{ vars.SKIP_PRD_RELEASE || 'true' }}" >> $GITHUB_OUTPUT
+          echo "PR_DEVELOP=${{ github.event_name == 'pull_request_review' && github.event.pull_request.base.ref == 'develop' && 'true' }}" >> $GITHUB_OUTPUT
+          echo "PR_MAIN=${{ github.event_name == 'pull_request_review' && github.event.pull_request.base.ref == 'main' && 'true' }}" >> $GITHUB_OUTPUT
 
   check-settings:
     needs: [init-vars]
@@ -68,14 +63,14 @@ jobs:
       KUI_ARTIFACT_ZIP_NAME: http-post-exp-fa-package
       environment: Development
 
-  skip-releases:
+  skip-all-releases:
     needs: [build, init-vars]
     if: ${{ needs.init-vars.outputs.SKIP_RELEASES != 'false' }}
     runs-on: ubuntu-latest
     steps:
       - name: Settings
         run: |
-          echo "Executed skip-releases"
+          echo "Executed skip-all-releases"
           echo "SKIP_RELEASES: ${{ needs.init-vars.outputs.SKIP_RELEASES != 'false' }}"
 
   release-dev:
