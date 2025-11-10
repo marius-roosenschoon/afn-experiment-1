@@ -42,14 +42,14 @@ jobs:
       environment: Development
     secrets: inherit
 
-  approval-gate-tst-skipped:
+  release-tst-skip-check:
     if: ${{ vars.KUI_SKIP_TST_RELEASE != 'false' }}
     needs: release-dev
     runs-on: ubuntu-latest
     steps:
-      - name: Explain Skipping
+      - name: Check for Skipping TST
         run: |
-          echo "Skipping TST release because KUI_SKIP_TST_RELEASE: ${{ vars.KUI_SKIP_TST_RELEASE }}"
+          echo "TST release check KUI_SKIP_TST_RELEASE: ${{ vars.KUI_SKIP_TST_RELEASE }}"
 
   approval-gate-tst:
     if: ${{ vars.KUI_SKIP_TST_RELEASE == 'false' }}
@@ -69,14 +69,14 @@ jobs:
       environment: Test
     secrets: inherit
 
-  approval-gate-prd-skipped:
+  release-prd-skip-check:
     if: ${{ vars.KUI_SKIP_PRD_RELEASE != 'false' }}
-    needs: release-dev
+    needs: release-tst
     runs-on: ubuntu-latest
     steps:
-      - name: Explain Skipping
+      - name: Check for Skipping PRD
         run: |
-          echo "Skipping PRD release because KUI_SKIP_PRD_RELEASE: ${{ vars.KUI_SKIP_PRD_RELEASE }}"
+          echo "PRD release check KUI_SKIP_PRD_RELEASE: ${{ vars.KUI_SKIP_PRD_RELEASE }}"
 
   approval-gate-prod:
     if: ${{ vars.KUI_SKIP_PRD_RELEASE == 'false' }}
