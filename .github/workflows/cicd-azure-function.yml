@@ -36,8 +36,8 @@ jobs:
           echo "SKIP_RELEASES=false" >> $GITHUB_OUTPUT
           echo "SKIP_TST_RELEASE=false" >> $GITHUB_OUTPUT
           echo "SKIP_PRD_RELEASE=false" >> $GITHUB_OUTPUT
-          echo "PR_DEVELOP=true" >> $GITHUB_OUTPUT
-          echo "PR_MAIN=false" >> $GITHUB_OUTPUT
+          echo "PR_DEVELOP=false" >> $GITHUB_OUTPUT
+          echo "PR_MAIN=true" >> $GITHUB_OUTPUT
 
   check-settings:
     needs: [init-vars]
