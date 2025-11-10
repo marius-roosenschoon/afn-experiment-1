@@ -11,11 +11,12 @@ on:
   workflow_dispatch:
 
 env:
-  SKIP_RELEASES: ${{ github.event_name == 'push' && 'true' || 'true' }}
+  # SKIP_RELEASES: ${{ github.event_name == 'push' && 'true' || 'false' }}
+  SKIP_RELEASES: 'false'
   SKIP_TST_RELEASE: ${{ vars.SKIP_TST_RELEASE || 'true' }}
   SKIP_PRD_RELEASE: ${{ vars.SKIP_PRD_RELEASE || 'true' }}
-  PR_DEVELOP: ${{ github.event_name == 'pull_request_review' && github.event.pull_request.base.ref == 'develop' }}
-  PR_MAIN: ${{ github.event_name == 'pull_request_review' && github.event.pull_request.base.ref == 'main' }}
+  PR_DEVELOP: ${{ github.event_name == 'pull_request_review' && github.event.pull_request.base.ref == 'develop' && 'true' }}
+  PR_MAIN: ${{ github.event_name == 'pull_request_review' && github.event.pull_request.base.ref == 'main' && 'true' }}
 
 defaults:
   run:
