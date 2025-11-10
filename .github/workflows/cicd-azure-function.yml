@@ -34,8 +34,8 @@ jobs:
           # echo "PR_DEVELOP=${{ github.event_name == 'pull_request_review' && github.event.pull_request.base.ref == 'develop' && 'true' }}" >> $GITHUB_OUTPUT
           # echo "PR_MAIN=${{ github.event_name == 'pull_request_review' && github.event.pull_request.base.ref == 'main' && 'true' }}" >> $GITHUB_OUTPUT
           echo "SKIP_RELEASES=false" >> $GITHUB_OUTPUT
-          echo "SKIP_TST_RELEASE=false" >> $GITHUB_OUTPUT
-          echo "SKIP_PRD_RELEASE=false" >> $GITHUB_OUTPUT
+          echo "SKIP_TST_RELEASE=true" >> $GITHUB_OUTPUT
+          echo "SKIP_PRD_RELEASE=true" >> $GITHUB_OUTPUT
           echo "PR_DEVELOP=true" >> $GITHUB_OUTPUT
           echo "PR_MAIN=false" >> $GITHUB_OUTPUT
 
@@ -70,7 +70,7 @@ jobs:
 
   skip-releases:
     needs: [build, init-vars]
-    if: ${{ needs.init-vars.outputs.SKIP_RELEASES != 'false' }}
+    if: ${{ (needs.init-vars.outputs.SKIP_RELEASES != 'false') && (needs.init-vars.outputs.PR_DEVELOP == 'true') }}
     runs-on: ubuntu-latest
     steps:
       - name: Settings
@@ -79,7 +79,7 @@ jobs:
 
   release-dev:
     needs: [build, init-vars]
-    if: ${{ needs.init-vars.outputs.SKIP_RELEASES == 'false' }}
+    if: ${{ (needs.init-vars.outputs.SKIP_RELEASES == 'false') && (needs.init-vars.outputs.PR_DEVELOP == 'true') }}
     runs-on: ubuntu-latest
     steps:
       - name: Settings
