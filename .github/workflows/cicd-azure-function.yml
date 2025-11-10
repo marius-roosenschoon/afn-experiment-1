@@ -34,8 +34,8 @@ jobs:
           # echo "PR_DEVELOP=${{ github.event_name == 'pull_request_review' && github.event.pull_request.base.ref == 'develop' && 'true' }}" >> $GITHUB_OUTPUT
           # echo "PR_MAIN=${{ github.event_name == 'pull_request_review' && github.event.pull_request.base.ref == 'main' && 'true' }}" >> $GITHUB_OUTPUT
           echo "SKIP_RELEASES=false" >> $GITHUB_OUTPUT
-          echo "SKIP_TST_RELEASE=true" >> $GITHUB_OUTPUT
-          echo "SKIP_PRD_RELEASE=true" >> $GITHUB_OUTPUT
+          echo "SKIP_TST_RELEASE=false" >> $GITHUB_OUTPUT
+          echo "SKIP_PRD_RELEASE=false" >> $GITHUB_OUTPUT
           echo "PR_DEVELOP=true" >> $GITHUB_OUTPUT
           echo "PR_MAIN=false" >> $GITHUB_OUTPUT
 
@@ -70,7 +70,7 @@ jobs:
 
   skip-releases:
     needs: [build, init-vars]
-    if: ${{ (needs.init-vars.outputs.SKIP_RELEASES != 'false') && (needs.init-vars.outputs.PR_DEVELOP == 'true') }}
+    if: ${{ (needs.init-vars.outputs.SKIP_RELEASES != 'false') }}
     runs-on: ubuntu-latest
     steps:
       - name: Settings
@@ -79,12 +79,18 @@ jobs:
 
   release-dev:
     needs: [build, init-vars]
-    if: ${{ (needs.init-vars.outputs.SKIP_RELEASES == 'false') && (needs.init-vars.outputs.PR_DEVELOP == 'true') }}
+    if: ${{
+        needs.init-vars.outputs.SKIP_RELEASES == 'false' && 
+        (
+          (needs.init-vars.outputs.PR_DEVELOP == 'true') ||
+          (needs.init-vars.outputs.PR_MAIN == 'true')
+        )
+      }}
     runs-on: ubuntu-latest
     steps:
       - name: Settings
         run: |
-          echo "build stage - add your steps here"
+          echo "release-dev stage - add your steps here"
 
   skip-release-tst:
     needs: [release-dev, init-vars]
@@ -97,7 +103,10 @@ jobs:
 
   approval-gate-tst:
     needs: [release-dev, init-vars]
-    if: ${{ needs.init-vars.outputs.SKIP_TST_RELEASE == 'false' }}
+    if: ${{
+        needs.init-vars.outputs.SKIP_TST_RELEASE == 'false' &&
+        needs.init-vars.outputs.PR_MAIN == 'true'
+      }}
     environment: Test
     runs-on: ubuntu-latest
     steps:
@@ -106,7 +115,10 @@ jobs:
 
   release-tst:
     needs: [approval-gate-tst, init-vars]
-    if: ${{ needs.init-vars.outputs.SKIP_TST_RELEASE == 'false' }}
+    if: ${{
+        needs.init-vars.outputs.SKIP_TST_RELEASE == 'false' &&
+        needs.init-vars.outputs.PR_MAIN == 'true'
+      }}
     runs-on: ubuntu-latest
     steps:
       - name: Settings
@@ -124,7 +136,10 @@ jobs:
 
   approval-gate-prod:
     needs: [release-tst, init-vars]
-    if: ${{ needs.init-vars.outputs.SKIP_PRD_RELEASE == 'false' }}
+    if: ${{
+        needs.init-vars.outputs.SKIP_PRD_RELEASE == 'false' &&
+        needs.init-vars.outputs.PR_MAIN == 'true'
+      }}
     environment: Production
     runs-on: ubuntu-latest
     steps:
@@ -133,7 +148,10 @@ jobs:
 
   release-prd:
     needs: [approval-gate-prod, init-vars]
-    if: ${{ needs.init-vars.outputs.SKIP_PRD_RELEASE == 'false' }}
+    if: ${{
+        needs.init-vars.outputs.SKIP_PRD_RELEASE == 'false' &&
+        needs.init-vars.outputs.PR_MAIN == 'true'
+      }}
     runs-on: ubuntu-latest
     steps:
       - name: Settings
