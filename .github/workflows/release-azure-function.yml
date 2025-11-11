@@ -21,40 +21,39 @@ env:
   KUI_SCRIPT_STAGE_4: ${{ github.workspace }}/release/Scripts/http-post-exp-stage-4.sh
 
 jobs:
-  release-dev:
+  release:
     runs-on: ubuntu-latest
     steps:
       - name: Set Azure Credentials by Environment
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
         run: |
-          if [ "${{ inputs.environment }}" = "Development" ]; then
+          if [ "$ENVIRONMENT" = "Development" ]; then
             echo "AZURE_CLIENT_ID=${{ secrets.KUI_SPN_DEV_CLIENT_ID }}" >> $GITHUB_ENV
             echo "AZURE_CLIENT_SECRET=${{ secrets.KUI_SPN_DEV_CLIENT_SECRET }}" >> $GITHUB_ENV
             echo "AZURE_TENANT_ID=${{ secrets.KUI_SPN_DEV_TENANT_ID }}" >> $GITHUB_ENV
             echo "KUI_FUNCTION_APP_NAME=${{ vars.KUI_DEV_FUNCTION_APP_01_NAME }}" >> $GITHUB_ENV
             echo "KUI_RG=${{ vars.KUI_DEV_RG }}" >> $GITHUB_ENV
-          elif [ "${{ inputs.environment }}" = "Test" ]; then
+          elif [ "$ENVIRONMENT" = "Test" ]; then
             echo "AZURE_CLIENT_ID=${{ secrets.KUI_SPN_TST_CLIENT_ID }}" >> $GITHUB_ENV
             echo "AZURE_CLIENT_SECRET=${{ secrets.KUI_SPN_TST_CLIENT_SECRET }}" >> $GITHUB_ENV
             echo "AZURE_TENANT_ID=${{ secrets.KUI_SPN_TST_TENANT_ID }}" >> $GITHUB_ENV
             echo "KUI_FUNCTION_APP_NAME=${{ vars.KUI_TST_FUNCTION_APP_01_NAME }}" >> $GITHUB_ENV
             echo "KUI_RG=${{ vars.KUI_TST_RG }}" >> $GITHUB_ENV
-          elif [ "${{ inputs.environment }}" = "Production" ]; then
+          elif [ "$ENVIRONMENT" = "Production" ]; then
             echo "AZURE_CLIENT_ID=${{ secrets.KUI_SPN_PRD_CLIENT_ID }}" >> $GITHUB_ENV
             echo "AZURE_CLIENT_SECRET=${{ secrets.KUI_SPN_PRD_CLIENT_SECRET }}" >> $GITHUB_ENV
             echo "AZURE_TENANT_ID=${{ secrets.KUI_SPN_PRD_TENANT_ID }}" >> $GITHUB_ENV
             echo "KUI_FUNCTION_APP_NAME=${{ vars.KUI_PRD_FUNCTION_APP_01_NAME }}" >> $GITHUB_ENV
             echo "KUI_RG=${{ vars.KUI_PRD_RG }}" >> $GITHUB_ENV
           else
-            echo "Unknown environment: ${{ inputs.environment }}"
+            echo "Unknown environment: $ENVIRONMENT"
             exit 1
           fi
 
       - name: Release Environment
         run: |
           echo "Releasing to: ${{ inputs.environment }}"
-          echo "AZURE_CLIENT_ID: ${{ env.AZURE_CLIENT_ID }}"
-          echo "AZURE_CLIENT_SECRET: ${{ env.AZURE_CLIENT_SECRET }}"
-          echo "AZURE_TENANT_ID: ${{ env.AZURE_TENANT_ID }}"
           echo "KUI_FUNCTION_APP_NAME: ${{ env.KUI_FUNCTION_APP_NAME }}"
           echo "KUI_RG: ${{ env.KUI_RG }}"
           echo "KUI_ARTIFACT_ZIP_NAME: ${{ env.KUI_ARTIFACT_ZIP_NAME }}"

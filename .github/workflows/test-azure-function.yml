@@ -20,7 +20,7 @@ env:
   KUI_ARTIFACT_RELEASE_PATH: ${{ github.workspace }}/release
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     env:
       name: Development
