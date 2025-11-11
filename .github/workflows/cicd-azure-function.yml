@@ -28,11 +28,15 @@ jobs:
       - id: set-vars
         run: |
           echo "Setting pipeline variables"
-          echo "SKIP_RELEASES=${{ github.event_name == 'push' && 'true' || 'false' }}" >> $GITHUB_OUTPUT
-          echo "SKIP_TST_RELEASE=${{ vars.SKIP_TST_RELEASE || 'true' }}" >> $GITHUB_OUTPUT
-          echo "SKIP_PRD_RELEASE=${{ vars.SKIP_PRD_RELEASE || 'true' }}" >> $GITHUB_OUTPUT
+          #echo "SKIP_RELEASES=${{ github.event_name == 'push' && 'true' || 'false' }}" >> $GITHUB_OUTPUT
+          #echo "SKIP_TST_RELEASE=${{ vars.SKIP_TST_RELEASE || 'true' }}" >> $GITHUB_OUTPUT
+          #echo "SKIP_PRD_RELEASE=${{ vars.SKIP_PRD_RELEASE || 'true' }}" >> $GITHUB_OUTPUT
           echo "PR_DEVELOP=${{ github.event_name == 'pull_request_review' && github.event.pull_request.base.ref == 'develop' && 'true' }}" >> $GITHUB_OUTPUT
-          echo "PR_MAIN=${{ github.event_name == 'pull_request_review' && github.event.pull_request.base.ref == 'main' && 'true' }}" >> $GITHUB_OUTPUT
+          # echo "PR_MAIN=${{ github.event_name == 'pull_request_review' && github.event.pull_request.base.ref == 'main' && 'true' }}" >> $GITHUB_OUTPUT
+          echo "SKIP_RELEASES=false" >> $GITHUB_OUTPUT
+          echo "SKIP_TST_RELEASE=true" >> $GITHUB_OUTPUT
+          echo "SKIP_PRD_RELEASE=true" >> $GITHUB_OUTPUT
+          echo "PR_MAIN=true" >> $GITHUB_OUTPUT
 
   check-settings:
     needs: [init-vars]
@@ -82,7 +86,7 @@ jobs:
           (needs.init-vars.outputs.PR_MAIN == 'true')
         )
       }}
-    uses: ./.github/workflows/release-azure-function-dev.yml
+    uses: ./.github/workflows/release-azure-function.yml
     with:
       KUI_ARTIFACT_ZIP_NAME: http-post-exp-fa-package
       environment: Development
@@ -116,7 +120,7 @@ jobs:
         needs.init-vars.outputs.SKIP_TST_RELEASE == 'false' &&
         needs.init-vars.outputs.PR_MAIN == 'true'
       }}
-    uses: ./.github/workflows/release-azure-function-tst.yml
+    uses: ./.github/workflows/release-azure-function.yml
     with:
       KUI_ARTIFACT_ZIP_NAME: http-post-exp-fa-package
       environment: Test
@@ -150,7 +154,7 @@ jobs:
         needs.init-vars.outputs.SKIP_PRD_RELEASE == 'false' &&
         needs.init-vars.outputs.PR_MAIN == 'true'
       }}
-    uses: ./.github/workflows/release-azure-function-prd.yml
+    uses: ./.github/workflows/release-azure-function.yml
     with:
       KUI_ARTIFACT_ZIP_NAME: http-post-exp-fa-package
       environment: Production
