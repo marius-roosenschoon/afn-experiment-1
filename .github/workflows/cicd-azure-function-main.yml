@@ -84,7 +84,7 @@ jobs:
     if: ${{
         needs.init-vars.outputs.KUI_SKIP_APP_BUILD_AND_RELEASE == 'false' &&
         needs.init-vars.outputs.BRANCH_PUSH_MAIN == 'false' &&
-        needs.init-vars.outputs.DISPATCH_TRIGGERED == 'false' &&
+        needs.init-vars.outputs.DISPATCH_TRIGGERED == 'false'
       }}
     runs-on: ubuntu-latest
     steps:
