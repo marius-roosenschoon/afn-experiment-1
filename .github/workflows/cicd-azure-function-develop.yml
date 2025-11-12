@@ -1,0 +1,112 @@
+name: CI/CD Build and release pipeline for (Development, Test, Production)
+
+on:
+  push:
+    branches:
+      - develop
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+
+  init-vars:
+    runs-on: ubuntu-latest
+    outputs:
+      KUI_SKIP_APP_BUILD_AND_RELEASE: ${{ steps.set-vars.outputs.KUI_SKIP_APP_BUILD_AND_RELEASE }}
+      KUI_SKIP_APP_TST_RELEASE: ${{ steps.set-vars.outputs.KUI_SKIP_APP_TST_RELEASE }}
+      KUI_SKIP_APP_PRD_RELEASE: ${{ steps.set-vars.outputs.KUI_SKIP_APP_PRD_RELEASE }}
+      BRANCH_PUSH_OTHER: ${{ steps.set-vars.outputs.BRANCH_PUSH_OTHER }}
+      BRANCH_PUSH_DEVELOP: ${{ steps.set-vars.outputs.BRANCH_PUSH_DEVELOP }}
+      BRANCH_PUSH_MAIN: ${{ steps.set-vars.outputs.BRANCH_PUSH_MAIN }}
+      DISPATCH_TRIGGERED: ${{ steps.set-vars.outputs.DISPATCH_TRIGGERED }}
+    steps:
+      - id: set-vars
+        run: |
+          echo "Setting pipeline variables"
+          echo "KUI_SKIP_APP_BUILD_AND_RELEASE=${{ vars.KUI_SKIP_APP_BUILD_AND_RELEASE || 'true' }}" >> $GITHUB_OUTPUT
+          echo "KUI_SKIP_APP_TST_RELEASE=${{ vars.KUI_SKIP_APP_TST_RELEASE || 'true' }}" >> $GITHUB_OUTPUT
+          echo "KUI_SKIP_APP_PRD_RELEASE=${{ vars.KUI_SKIP_APP_PRD_RELEASE || 'true' }}" >> $GITHUB_OUTPUT
+          echo "BRANCH_PUSH_OTHER=${{ github.event_name == 'push' && (github.ref != 'refs/heads/main' && github.ref != 'refs/heads/develop') && 'true' || 'false' }}" >> $GITHUB_OUTPUT
+          echo "BRANCH_PUSH_DEVELOP=${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' && 'true' || 'false' }}" >> $GITHUB_OUTPUT
+          echo "BRANCH_PUSH_MAIN=${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && 'true' || 'false' }}" >> $GITHUB_OUTPUT
+          echo "DISPATCH_TRIGGERED=${{ github.event_name == 'workflow_dispatch' && 'true' || 'false' }}" >> $GITHUB_OUTPUT
+
+  check-settings:
+    needs: [init-vars]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check pre-execution settings
+        run: |
+          echo "Checking pipeline variables"
+          echo "KUI_SKIP_APP_BUILD_AND_RELEASE: ${{ needs.init-vars.outputs.KUI_SKIP_APP_BUILD_AND_RELEASE }}"
+          echo "KUI_SKIP_APP_TST_RELEASE: ${{ needs.init-vars.outputs.KUI_SKIP_APP_TST_RELEASE }}"
+          echo "KUI_SKIP_APP_PRD_RELEASE: ${{ needs.init-vars.outputs.KUI_SKIP_APP_PRD_RELEASE }}"
+          echo "BRANCH_PUSH_OTHER: ${{ needs.init-vars.outputs.BRANCH_PUSH_OTHER }}"
+          echo "BRANCH_PUSH_DEVELOP: ${{ needs.init-vars.outputs.BRANCH_PUSH_DEVELOP }}"
+          echo "BRANCH_PUSH_MAIN: ${{ needs.init-vars.outputs.BRANCH_PUSH_MAIN }}"
+          echo "DISPATCH_TRIGGERED: ${{ needs.init-vars.outputs.DISPATCH_TRIGGERED }}"
+
+  unit-test:
+    needs: [check-settings, init-vars]
+    if: ${{
+        needs.init-vars.outputs.KUI_SKIP_APP_BUILD_AND_RELEASE == 'false' &&
+        (
+          needs.init-vars.outputs.BRANCH_PUSH_DEVELOP == 'true' ||
+          needs.init-vars.outputs.BRANCH_PUSH_MAIN == 'true' ||
+          needs.init-vars.outputs.DISPATCH_TRIGGERED == 'true'
+        )
+      }}
+    uses: ./.github/workflows/test-azure-function.yml
+    with:
+      KUI_SOLUTION: HttpPostExperiment.sln
+      KUI_SOLUTION_BUILD_CONFIGURATION: Release
+      environment: Development
+    secrets: inherit
+
+  build:
+    needs: [unit-test, init-vars]
+    if: ${{
+        needs.init-vars.outputs.KUI_SKIP_APP_BUILD_AND_RELEASE == 'false' &&
+        (
+          needs.init-vars.outputs.BRANCH_PUSH_DEVELOP == 'true' ||
+          needs.init-vars.outputs.BRANCH_PUSH_MAIN == 'true' ||
+          needs.init-vars.outputs.DISPATCH_TRIGGERED == 'true'
+        )
+      }}
+    uses: ./.github/workflows/build-azure-function.yml
+    with:
+      KUI_ARTIFACT_ZIP_NAME: http-post-exp-fa-package
+      environment: Development
+
+  skip-release:
+    needs: [build, init-vars]
+    if: ${{
+        needs.init-vars.outputs.KUI_SKIP_APP_BUILD_AND_RELEASE == 'false' &&
+        needs.init-vars.outputs.BRANCH_PUSH_DEVELOP == 'false' &&
+        needs.init-vars.outputs.BRANCH_PUSH_MAIN == 'false' &&
+        needs.init-vars.outputs.DISPATCH_TRIGGERED == 'false'
+      }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Settings
+        run: |
+          echo "Executed skip-release"
+
+  release-dev:
+    needs: [build, init-vars]
+    if: ${{
+        needs.init-vars.outputs.KUI_SKIP_APP_BUILD_AND_RELEASE == 'false' &&
+        (
+          needs.init-vars.outputs.BRANCH_PUSH_DEVELOP == 'true' ||
+          needs.init-vars.outputs.BRANCH_PUSH_MAIN == 'true' ||
+          needs.init-vars.outputs.DISPATCH_TRIGGERED == 'true'
+        )
+      }}
+    uses: ./.github/workflows/release-azure-function.yml
+    with:
+      KUI_ARTIFACT_ZIP_NAME: http-post-exp-fa-package
+      environment: Development
+    secrets: inherit

@@ -3,7 +3,6 @@ name: CI/CD Build and release pipeline for (Development, Test, Production)
 on:
   push:
     branches:
-      - develop
       - main
   workflow_dispatch:
 
@@ -55,7 +54,6 @@ jobs:
     if: ${{
         needs.init-vars.outputs.KUI_SKIP_APP_BUILD_AND_RELEASE == 'false' &&
         (
-          needs.init-vars.outputs.BRANCH_PUSH_DEVELOP == 'true' ||
           needs.init-vars.outputs.BRANCH_PUSH_MAIN == 'true' ||
           needs.init-vars.outputs.DISPATCH_TRIGGERED == 'true'
         )
@@ -72,7 +70,6 @@ jobs:
     if: ${{
         needs.init-vars.outputs.KUI_SKIP_APP_BUILD_AND_RELEASE == 'false' &&
         (
-          needs.init-vars.outputs.BRANCH_PUSH_DEVELOP == 'true' ||
           needs.init-vars.outputs.BRANCH_PUSH_MAIN == 'true' ||
           needs.init-vars.outputs.DISPATCH_TRIGGERED == 'true'
         )
@@ -86,9 +83,8 @@ jobs:
     needs: [build, init-vars]
     if: ${{
         needs.init-vars.outputs.KUI_SKIP_APP_BUILD_AND_RELEASE == 'false' &&
-        needs.init-vars.outputs.BRANCH_PUSH_DEVELOP == 'false' &&
         needs.init-vars.outputs.BRANCH_PUSH_MAIN == 'false' &&
-        needs.init-vars.outputs.DISPATCH_TRIGGERED == 'false'
+        needs.init-vars.outputs.DISPATCH_TRIGGERED == 'false' &&
       }}
     runs-on: ubuntu-latest
     steps:
@@ -97,28 +93,11 @@ jobs:
           echo "Executed skip-all-releases"
           echo "SKIP_RELEASES: ${{ needs.init-vars.outputs.SKIP_RELEASES != 'false' }}"
 
-  release-dev:
+  skip-release-tst:
     needs: [build, init-vars]
     if: ${{
         needs.init-vars.outputs.KUI_SKIP_APP_BUILD_AND_RELEASE == 'false' &&
-        (
-          needs.init-vars.outputs.BRANCH_PUSH_DEVELOP == 'true' ||
-          needs.init-vars.outputs.BRANCH_PUSH_MAIN == 'true' ||
-          needs.init-vars.outputs.DISPATCH_TRIGGERED == 'true'
-        )
-      }}
-    uses: ./.github/workflows/release-azure-function.yml
-    with:
-      KUI_ARTIFACT_ZIP_NAME: http-post-exp-fa-package
-      environment: Development
-    secrets: inherit
-
-  skip-release-tst:
-    needs: [release-dev, init-vars]
-    if: ${{
-        needs.init-vars.outputs.KUI_SKIP_APP_BUILD_AND_RELEASE == 'false' &&
         needs.init-vars.outputs.KUI_SKIP_APP_TST_RELEASE == 'true' &&
-        needs.init-vars.outputs.BRANCH_PUSH_DEVELOP == 'false' &&
         (
           needs.init-vars.outputs.BRANCH_PUSH_MAIN == 'true' ||
           needs.init-vars.outputs.DISPATCH_TRIGGERED == 'true'
@@ -132,11 +111,10 @@ jobs:
           echo "KUI_SKIP_APP_TST_RELEASE: ${{ needs.init-vars.outputs.KUI_SKIP_APP_TST_RELEASE }}"
 
   approval-gate-tst:
-    needs: [release-dev, init-vars]
+    needs: [build, init-vars]
     if: ${{
         needs.init-vars.outputs.KUI_SKIP_APP_BUILD_AND_RELEASE == 'false' &&
         needs.init-vars.outputs.KUI_SKIP_APP_TST_RELEASE == 'false' &&
-        needs.init-vars.outputs.BRANCH_PUSH_DEVELOP == 'false' &&
         (
           needs.init-vars.outputs.BRANCH_PUSH_MAIN == 'true' ||
           needs.init-vars.outputs.DISPATCH_TRIGGERED == 'true'
@@ -153,7 +131,6 @@ jobs:
     if: ${{
         needs.init-vars.outputs.KUI_SKIP_APP_BUILD_AND_RELEASE == 'false' &&
         needs.init-vars.outputs.KUI_SKIP_APP_TST_RELEASE == 'false' &&
-        needs.init-vars.outputs.BRANCH_PUSH_DEVELOP == 'false' &&
         (
           needs.init-vars.outputs.BRANCH_PUSH_MAIN == 'true' ||
           needs.init-vars.outputs.DISPATCH_TRIGGERED == 'true'
@@ -170,7 +147,6 @@ jobs:
     if: ${{
         needs.init-vars.outputs.KUI_SKIP_APP_BUILD_AND_RELEASE == 'false' &&
         needs.init-vars.outputs.KUI_SKIP_APP_PRD_RELEASE == 'true' &&
-        needs.init-vars.outputs.BRANCH_PUSH_DEVELOP == 'false' &&
         (
           needs.init-vars.outputs.BRANCH_PUSH_MAIN == 'true' ||
           needs.init-vars.outputs.DISPATCH_TRIGGERED == 'true'
@@ -188,7 +164,6 @@ jobs:
     if: ${{
         needs.init-vars.outputs.KUI_SKIP_APP_BUILD_AND_RELEASE == 'false' &&
         needs.init-vars.outputs.KUI_SKIP_APP_PRD_RELEASE == 'false' &&
-        needs.init-vars.outputs.BRANCH_PUSH_DEVELOP == 'false' &&
         (
           needs.init-vars.outputs.BRANCH_PUSH_MAIN == 'true' ||
           needs.init-vars.outputs.DISPATCH_TRIGGERED == 'true'
@@ -205,7 +180,6 @@ jobs:
     if: ${{
         needs.init-vars.outputs.KUI_SKIP_APP_BUILD_AND_RELEASE == 'false' &&
         needs.init-vars.outputs.KUI_SKIP_APP_PRD_RELEASE == 'false' &&
-        needs.init-vars.outputs.BRANCH_PUSH_DEVELOP == 'false' &&
         (
           needs.init-vars.outputs.BRANCH_PUSH_MAIN == 'true' ||
           needs.init-vars.outputs.DISPATCH_TRIGGERED == 'true'
