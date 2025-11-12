@@ -53,17 +53,40 @@ namespace HttpTriggerPostExperimentTests
             var result = await HttpTriggerPostExperiment.Run(request, loggerMock.Object);
 
             var okResult = result as OkObjectResult;
-            string? responseBody = okResult?.Value.ToString();
 
             // Assert
             Assert.IsNotNull(result);
-
             Assert.IsInstanceOf<OkObjectResult>(result);
 
-            Assert.IsNotNull(okResult.Value);
+            Assert.IsNotNull(okResult);
+            Assert.IsNotNull(okResult?.Value);
 
+            string? responseBody = okResult?.Value?.ToString();
             StringAssert.AreEqualIgnoringCase(expectedResponse, responseBody);
             Console.WriteLine(responseBody);
         }
+
+        [Test]
+        public void Health_ReturnsHealthyStatus()
+        {
+            // Arrange
+            var context = new DefaultHttpContext();
+            var request = context.Request;
+            var loggerMock = new Mock<Microsoft.Extensions.Logging.ILogger>();
+
+            // Act
+            var result = HttpTriggerPostExperiment.Health(request, loggerMock.Object);
+            var okResult = result as OkObjectResult;
+            var responseBody = okResult?.Value?.ToString();
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.IsInstanceOf<OkObjectResult>(result);
+            Assert.IsNotNull(okResult?.Value);
+            StringAssert.Contains("Healthy", responseBody);
+            Console.WriteLine(responseBody);
+        }
+
+
     }
 }

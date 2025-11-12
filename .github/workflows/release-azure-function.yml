@@ -1,0 +1,76 @@
+name: Release HttpTriggerPostExperiment Development
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: "Name of the environment to deploy"
+        required: true
+        type: string
+      KUI_ARTIFACT_ZIP_NAME:
+        required: true
+        type: string
+env:
+  KUI_ARTIFACT_ZIP_NAME: ${{ inputs.KUI_ARTIFACT_ZIP_NAME }}
+  KUI_ARTIFACT_VERSION: 1.0.${{ github.run_number }}
+  KUI_ARTIFACT_RELEASE_PATH: ${{ github.workspace }}/release
+
+  KUI_SCRIPT_STAGE_1: ${{ github.workspace }}/release/Scripts/http-post-exp-stage-1.sh
+  KUI_SCRIPT_STAGE_2: ${{ github.workspace }}/release/Scripts/http-post-exp-stage-2.sh
+  KUI_SCRIPT_STAGE_3: ${{ github.workspace }}/release/Scripts/http-post-exp-stage-3.sh
+  KUI_SCRIPT_STAGE_4: ${{ github.workspace }}/release/Scripts/http-post-exp-stage-4.sh
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set Azure Credentials for Development
+        if: ${{ inputs.environment == 'Development' }}
+        run: |
+          echo "AZURE_CLIENT_ID=${{ secrets.KUI_SPN_DEV_CLIENT_ID }}" >> $GITHUB_ENV
+          echo "AZURE_CLIENT_SECRET=${{ secrets.KUI_SPN_DEV_CLIENT_SECRET }}" >> $GITHUB_ENV
+          echo "AZURE_TENANT_ID=${{ secrets.KUI_SPN_DEV_TENANT_ID }}" >> $GITHUB_ENV
+          echo "KUI_FUNCTION_APP_NAME=${{ vars.KUI_DEV_FUNCTION_APP_01_NAME }}" >> $GITHUB_ENV
+          echo "KUI_RG=${{ vars.KUI_DEV_RG }}" >> $GITHUB_ENV
+
+      - name: Set Azure Credentials for Test
+        if: ${{ inputs.environment == 'Test' }}
+        run: |
+          echo "AZURE_CLIENT_ID=${{ secrets.KUI_SPN_TST_CLIENT_ID }}" >> $GITHUB_ENV
+          echo "AZURE_CLIENT_SECRET=${{ secrets.KUI_SPN_TST_CLIENT_SECRET }}" >> $GITHUB_ENV
+          echo "AZURE_TENANT_ID=${{ secrets.KUI_SPN_TST_TENANT_ID }}" >> $GITHUB_ENV
+          echo "KUI_FUNCTION_APP_NAME=${{ vars.KUI_TST_FUNCTION_APP_01_NAME }}" >> $GITHUB_ENV
+          echo "KUI_RG=${{ vars.KUI_TST_RG }}" >> $GITHUB_ENV
+
+      - name: Set Azure Credentials for Production
+        if: ${{ inputs.environment == 'Production' }}
+        run: |
+          echo "AZURE_CLIENT_ID=${{ secrets.KUI_SPN_PRD_CLIENT_ID }}" >> $GITHUB_ENV
+          echo "AZURE_CLIENT_SECRET=${{ secrets.KUI_SPN_PRD_CLIENT_SECRET }}" >> $GITHUB_ENV
+          echo "AZURE_TENANT_ID=${{ secrets.KUI_SPN_PRD_TENANT_ID }}" >> $GITHUB_ENV
+          echo "KUI_FUNCTION_APP_NAME=${{ vars.KUI_PRD_FUNCTION_APP_01_NAME }}" >> $GITHUB_ENV
+          echo "KUI_RG=${{ vars.KUI_PRD_RG }}" >> $GITHUB_ENV
+
+      - name: Release Environment
+        run: |
+          echo "Releasing to: ${{ inputs.environment }}"
+          echo "KUI_FUNCTION_APP_NAME: ${{ env.KUI_FUNCTION_APP_NAME }}"
+          echo "KUI_RG: ${{ env.KUI_RG }}"
+          echo "KUI_ARTIFACT_ZIP_NAME: ${{ env.KUI_ARTIFACT_ZIP_NAME }}"
+
+      - name: Download Release Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.KUI_ARTIFACT_ZIP_NAME }}
+          path: ${{ github.workspace }}/release
+
+      - name: List release artifact files
+        run: ls -lRh ${{ github.workspace }}/release
+
+      - name: Deploy to Azure Functions
+        run: |
+          az login --service-principal --username ${{ env.AZURE_CLIENT_ID }} --password=${{ env.AZURE_CLIENT_SECRET }} --tenant ${{ env.AZURE_TENANT_ID }}
+          bash ${{ env.KUI_SCRIPT_STAGE_1 }}
+          RG="${{ env.KUI_RG }}" FUNCTION_APP_NAME="${{ env.KUI_FUNCTION_APP_NAME }}" PACKAGE_PATH="${{ env.KUI_ARTIFACT_RELEASE_PATH }}/${{ env.KUI_ARTIFACT_ZIP_NAME }}_${{ env.KUI_ARTIFACT_VERSION }}.zip" bash ${{ env.KUI_SCRIPT_STAGE_2 }}
+          RG="${{ env.KUI_RG }}" FUNCTION_APP_NAME="${{ env.KUI_FUNCTION_APP_NAME }}" bash ${{ env.KUI_SCRIPT_STAGE_3 }}
+          RG="${{ env.KUI_RG }}" FUNCTION_APP_NAME="${{ env.KUI_FUNCTION_APP_NAME }}" bash ${{ env.KUI_SCRIPT_STAGE_4 }}     
