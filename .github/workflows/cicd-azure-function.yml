@@ -16,6 +16,7 @@ jobs:
   init-vars:
     runs-on: ubuntu-latest
     outputs:
+      KUI_SKIP_APP_BUILD_AND_RELEASE: ${{ steps.set-vars.outputs.KUI_SKIP_APP_BUILD_AND_RELEASE }}
       KUI_SKIP_APP_TST_RELEASE: ${{ steps.set-vars.outputs.KUI_SKIP_APP_TST_RELEASE }}
       KUI_SKIP_APP_PRD_RELEASE: ${{ steps.set-vars.outputs.KUI_SKIP_APP_PRD_RELEASE }}
       BRANCH_PUSH_OTHER: ${{ steps.set-vars.outputs.BRANCH_PUSH_OTHER }}
@@ -26,6 +27,7 @@ jobs:
       - id: set-vars
         run: |
           echo "Setting pipeline variables"
+          echo "KUI_SKIP_APP_BUILD_AND_RELEASE=${{ vars.KUI_SKIP_APP_BUILD_AND_RELEASE || 'true' }}" >> $GITHUB_OUTPUT
           echo "KUI_SKIP_APP_TST_RELEASE=${{ vars.KUI_SKIP_APP_TST_RELEASE || 'true' }}" >> $GITHUB_OUTPUT
           echo "KUI_SKIP_APP_PRD_RELEASE=${{ vars.KUI_SKIP_APP_PRD_RELEASE || 'true' }}" >> $GITHUB_OUTPUT
           echo "BRANCH_PUSH_OTHER=${{ github.event_name == 'push' && (github.ref != 'refs/heads/main' && github.ref != 'refs/heads/develop') && 'true' || 'false' }}" >> $GITHUB_OUTPUT
@@ -40,6 +42,7 @@ jobs:
       - name: Check pre-execution settings
         run: |
           echo "Checking pipeline variables"
+          echo "KUI_SKIP_APP_BUILD_AND_RELEASE: ${{ needs.init-vars.outputs.KUI_SKIP_APP_BUILD_AND_RELEASE }}"
           echo "KUI_SKIP_APP_TST_RELEASE: ${{ needs.init-vars.outputs.KUI_SKIP_APP_TST_RELEASE }}"
           echo "KUI_SKIP_APP_PRD_RELEASE: ${{ needs.init-vars.outputs.KUI_SKIP_APP_PRD_RELEASE }}"
           echo "BRANCH_PUSH_OTHER: ${{ needs.init-vars.outputs.BRANCH_PUSH_OTHER }}"
@@ -49,11 +52,13 @@ jobs:
 
   unit-test:
     needs: [check-settings, init-vars]
-    if: ${{ 
-        needs.init-vars.outputs.BRANCH_PUSH_OTHER == 'true' ||
-        needs.init-vars.outputs.BRANCH_PUSH_DEVELOP == 'true' ||
-        needs.init-vars.outputs.BRANCH_PUSH_MAIN == 'true' ||
-        needs.init-vars.outputs.DISPATCH_TRIGGERED == 'true'
+    if: ${{
+        needs.init-vars.outputs.KUI_SKIP_APP_BUILD_AND_RELEASE == 'false' &&
+        (
+          needs.init-vars.outputs.BRANCH_PUSH_DEVELOP == 'true' ||
+          needs.init-vars.outputs.BRANCH_PUSH_MAIN == 'true' ||
+          needs.init-vars.outputs.DISPATCH_TRIGGERED == 'true'
+        )
       }}
     uses: ./.github/workflows/test-azure-function.yml
     with:
@@ -64,11 +69,13 @@ jobs:
 
   build:
     needs: [unit-test, init-vars]
-    if: ${{ 
-        needs.init-vars.outputs.BRANCH_PUSH_OTHER == 'true' ||
-        needs.init-vars.outputs.BRANCH_PUSH_DEVELOP == 'true' ||
-        needs.init-vars.outputs.BRANCH_PUSH_MAIN == 'true' ||
-        needs.init-vars.outputs.DISPATCH_TRIGGERED == 'true'
+    if: ${{
+        needs.init-vars.outputs.KUI_SKIP_APP_BUILD_AND_RELEASE == 'false' &&
+        (
+          needs.init-vars.outputs.BRANCH_PUSH_DEVELOP == 'true' ||
+          needs.init-vars.outputs.BRANCH_PUSH_MAIN == 'true' ||
+          needs.init-vars.outputs.DISPATCH_TRIGGERED == 'true'
+        )
       }}
     uses: ./.github/workflows/build-azure-function.yml
     with:
@@ -77,8 +84,10 @@ jobs:
 
   skip-all-releases:
     needs: [build, init-vars]
-    if: ${{ 
-        needs.init-vars.outputs.BRANCH_PUSH_OTHER == 'true' &&
+    if: ${{
+        needs.init-vars.outputs.KUI_SKIP_APP_BUILD_AND_RELEASE == 'false' &&
+        needs.init-vars.outputs.BRANCH_PUSH_DEVELOP == 'false' &&
+        needs.init-vars.outputs.BRANCH_PUSH_MAIN == 'false' &&
         needs.init-vars.outputs.DISPATCH_TRIGGERED == 'false'
       }}
     runs-on: ubuntu-latest
@@ -90,8 +99,8 @@ jobs:
 
   release-dev:
     needs: [build, init-vars]
-    if: ${{ 
-        needs.init-vars.outputs.BRANCH_PUSH_OTHER == 'false' &&
+    if: ${{
+        needs.init-vars.outputs.KUI_SKIP_APP_BUILD_AND_RELEASE == 'false' &&
         (
           needs.init-vars.outputs.BRANCH_PUSH_DEVELOP == 'true' ||
           needs.init-vars.outputs.BRANCH_PUSH_MAIN == 'true' ||
@@ -106,7 +115,15 @@ jobs:
 
   skip-release-tst:
     needs: [release-dev, init-vars]
-    if: ${{ needs.init-vars.outputs.KUI_SKIP_APP_TST_RELEASE == 'true' }}
+    if: ${{
+        needs.init-vars.outputs.KUI_SKIP_APP_BUILD_AND_RELEASE == 'false' &&
+        needs.init-vars.outputs.KUI_SKIP_APP_TST_RELEASE == 'true' &&
+        needs.init-vars.outputs.BRANCH_PUSH_DEVELOP == 'false' &&
+        (
+          needs.init-vars.outputs.BRANCH_PUSH_MAIN == 'true' ||
+          needs.init-vars.outputs.DISPATCH_TRIGGERED == 'true'
+        )
+      }}
     runs-on: ubuntu-latest
     steps:
       - name: Check for Skipping PRD
@@ -117,9 +134,13 @@ jobs:
   approval-gate-tst:
     needs: [release-dev, init-vars]
     if: ${{
-        needs.init-vars.outputs.BRANCH_PUSH_DEVELOP == 'true' ||
-        needs.init-vars.outputs.BRANCH_PUSH_MAIN == 'true' ||
-        needs.init-vars.outputs.DISPATCH_TRIGGERED == 'true'
+        needs.init-vars.outputs.KUI_SKIP_APP_BUILD_AND_RELEASE == 'false' &&
+        needs.init-vars.outputs.KUI_SKIP_APP_TST_RELEASE == 'false' &&
+        needs.init-vars.outputs.BRANCH_PUSH_DEVELOP == 'false' &&
+        (
+          needs.init-vars.outputs.BRANCH_PUSH_MAIN == 'true' ||
+          needs.init-vars.outputs.DISPATCH_TRIGGERED == 'true'
+        )
       }}
     environment: Test
     runs-on: ubuntu-latest
@@ -130,8 +151,13 @@ jobs:
   release-tst:
     needs: [approval-gate-tst, init-vars]
     if: ${{
-        needs.init-vars.outputs.BRANCH_PUSH_MAIN == 'true' ||
-        needs.init-vars.outputs.DISPATCH_TRIGGERED == 'true'
+        needs.init-vars.outputs.KUI_SKIP_APP_BUILD_AND_RELEASE == 'false' &&
+        needs.init-vars.outputs.KUI_SKIP_APP_TST_RELEASE == 'false' &&
+        needs.init-vars.outputs.BRANCH_PUSH_DEVELOP == 'false' &&
+        (
+          needs.init-vars.outputs.BRANCH_PUSH_MAIN == 'true' ||
+          needs.init-vars.outputs.DISPATCH_TRIGGERED == 'true'
+        )
       }}
     uses: ./.github/workflows/release-azure-function.yml
     with:
@@ -141,7 +167,15 @@ jobs:
 
   skip-release-prd:
     needs: [release-tst, init-vars]
-    if: ${{ needs.init-vars.outputs.KUI_SKIP_APP_PRD_RELEASE == 'true' }}
+    if: ${{
+        needs.init-vars.outputs.KUI_SKIP_APP_BUILD_AND_RELEASE == 'false' &&
+        needs.init-vars.outputs.KUI_SKIP_APP_PRD_RELEASE == 'true' &&
+        needs.init-vars.outputs.BRANCH_PUSH_DEVELOP == 'false' &&
+        (
+          needs.init-vars.outputs.BRANCH_PUSH_MAIN == 'true' ||
+          needs.init-vars.outputs.DISPATCH_TRIGGERED == 'true'
+        )
+      }}
     runs-on: ubuntu-latest
     steps:
       - name: Check for Skipping PRD
@@ -152,8 +186,13 @@ jobs:
   approval-gate-prod:
     needs: [release-tst, init-vars]
     if: ${{
-        needs.init-vars.outputs.BRANCH_PUSH_MAIN == 'true' ||
-        needs.init-vars.outputs.DISPATCH_TRIGGERED == 'true'
+        needs.init-vars.outputs.KUI_SKIP_APP_BUILD_AND_RELEASE == 'false' &&
+        needs.init-vars.outputs.KUI_SKIP_APP_PRD_RELEASE == 'false' &&
+        needs.init-vars.outputs.BRANCH_PUSH_DEVELOP == 'false' &&
+        (
+          needs.init-vars.outputs.BRANCH_PUSH_MAIN == 'true' ||
+          needs.init-vars.outputs.DISPATCH_TRIGGERED == 'true'
+        )
       }}
     environment: Production
     runs-on: ubuntu-latest
@@ -164,8 +203,13 @@ jobs:
   release-prd:
     needs: [approval-gate-prod, init-vars]
     if: ${{
-        needs.init-vars.outputs.BRANCH_PUSH_MAIN == 'true' ||
-        needs.init-vars.outputs.DISPATCH_TRIGGERED == 'true'
+        needs.init-vars.outputs.KUI_SKIP_APP_BUILD_AND_RELEASE == 'false' &&
+        needs.init-vars.outputs.KUI_SKIP_APP_PRD_RELEASE == 'false' &&
+        needs.init-vars.outputs.BRANCH_PUSH_DEVELOP == 'false' &&
+        (
+          needs.init-vars.outputs.BRANCH_PUSH_MAIN == 'true' ||
+          needs.init-vars.outputs.DISPATCH_TRIGGERED == 'true'
+        )
       }}
     uses: ./.github/workflows/release-azure-function.yml
     with:
