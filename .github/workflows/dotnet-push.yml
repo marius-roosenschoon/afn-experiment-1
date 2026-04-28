@@ -10,6 +10,7 @@ on:
       - 'src/**'
       - 'tests/**'
       - '.github/workflows/dotnet.yml'
+  workflow_dispatch:
 
 jobs:
   push-test:
