@@ -7,11 +7,10 @@ on:
       - develop
       - main
     paths:
-      - 'src/aspire/**'
-      - 'src/shared/**'
-      - 'src/web/**'
+      - 'src/**'
       - 'tests/**'
       - '.github/workflows/dotnet.yml'
+  workflow_dispatch:
 
 jobs:
   pull-request-test:
