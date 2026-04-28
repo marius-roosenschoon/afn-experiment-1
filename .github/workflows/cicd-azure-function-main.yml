@@ -3,7 +3,7 @@ name: CI/CD Build and release pipeline for (Development, Test, Production)
 on:
   push:
     branches:
-      - main
+      - disabled-main
   workflow_dispatch:
 
 defaults:

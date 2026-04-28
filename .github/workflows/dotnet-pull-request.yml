@@ -1,0 +1,18 @@
+name: .NET Build and Test (PR)
+
+on:
+  pull_request:
+    branches:
+      - release
+      - develop
+      - main
+    paths:
+      - 'src/aspire/**'
+      - 'src/shared/**'
+      - 'src/web/**'
+      - 'tests/**'
+      - '.github/workflows/dotnet.yml'
+
+jobs:
+  pull-request-test:
+    uses: ./.github/workflows/dotnet.yml
