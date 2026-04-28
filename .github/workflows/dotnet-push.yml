@@ -7,9 +7,7 @@ on:
       - 'hotfix/**'
       - 'bugfix/**'
     paths:
-      - 'src/aspire/**'
-      - 'src/shared/**'
-      - 'src/web/**'
+      - 'src/**'
       - 'tests/**'
       - '.github/workflows/dotnet.yml'
 
