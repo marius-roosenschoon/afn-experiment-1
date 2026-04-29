@@ -6,34 +6,24 @@
         <Configuration>
           <Format>cobertura</Format>
 
-          <!--
           <Exclude>
             [HttpPostNewExperiment]*
           </Exclude>
-          -->
 
-          <!--
           <ModulePathsExclude>
             <exclude>.*HttpPostNewExperiment.*</exclude>
           </ModulePathsExclude>
+
           <SourceFileExclude>
             <exclude>.*HttpPostNewExperiment.*</exclude>
           </SourceFileExclude>
-          -->
 
           <!-- Exclude files by attribute -->
-          <!--
           <ExcludeByFile>
-            <file>**/HttpPostNewTriggerTests.cs</file>
-            <file>**/HttpPostNewExperiment.cs</file>
+            <!-- <file>**/HttpPostNewTriggerTests.cs</file> -->
+            <!-- <file>**/HttpPostNewExperiment.cs</file> -->
             <file>**/add-functions/HttpPostNewExperiment/**/*.cs</file>
           </ExcludeByFile>
-          -->
-
-          <ExcludeByFile>
-            <file>**/add-functions/HttpPostNewExperiment/**</file>
-          </ExcludeByFile>
-
 
           <!-- Exclude attributes (methods/classes marked with these) -->
           <ExcludeByAttribute>
@@ -47,7 +37,6 @@
             <file>**/Migrations/**/*.cs</file>
             <file>**/*Designer.cs</file>
             <file>**/*.Generated.cs</file>
-            <file>**/HttpPostNewTriggerTests.cs</file>
           </ExcludeByFile>
         </Configuration>
       </DataCollector>
