@@ -6,20 +6,19 @@
         <Configuration>
           <Format>cobertura</Format>
           <Exclude>
-            <!-- Exclude specific classes -->
-            <class>HttpTriggerPostNewExperimentTests.Tests</class>
-            
-            <!-- Exclude HttpPostNewExperiment source code -->
-            <class>HttpPostNewExperiment.*</class>
-            
-            <!-- Exclude assemblies by pattern -->
-            <assembly>*HttpPostNewExperiment*</assembly>
-
-            <!-- Exclude files by path pattern -->
-            <file>.*HttpPostNewTriggerTests\.cs</file>
-            <file>.*HttpPostNewExperiment\.cs</file>
-            <file>.*/HttpPostNewExperiment/.*</file>
+            [HttpPostNewExperiment]*
+            [*]HttpPostNewExperiment.*
           </Exclude>
+          
+          <!-- Exclude files by attribute -->
+          <ExcludeByFile>
+            <file>**/Migrations/**/*.cs</file>
+            <file>**/*Designer.cs</file>
+            <file>**/*.Generated.cs</file>
+            <file>**/HttpPostNewTriggerTests.cs</file>
+            <file>**/HttpPostNewExperiment.cs</file>
+            <file>**/add-functions/HttpPostNewExperiment/**/*.cs</file>
+          </ExcludeByFile>
           
           <!-- Exclude attributes (methods/classes marked with these) -->
           <ExcludeByAttribute>
