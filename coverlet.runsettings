@@ -7,8 +7,13 @@
           <Format>cobertura</Format>
           <Exclude>
             [HttpPostNewExperiment]*
-            [*]HttpPostNewExperiment.*
           </Exclude>
+          <ModulePathsExclude>
+            <exclude>.*HttpPostNewExperiment.*</exclude>
+          </ModulePathsExclude>
+          <SourceFileExclude>
+            <exclude>.*HttpPostNewExperiment.*</exclude>
+          </SourceFileExclude>
           
           <!-- Exclude files by attribute -->
           <ExcludeByFile>
