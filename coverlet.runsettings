@@ -8,9 +8,17 @@
           <Exclude>
             <!-- Exclude specific classes -->
             <class>HttpTriggerPostNewExperimentTests.Tests</class>
+            
+            <!-- Exclude HttpPostNewExperiment source code -->
+            <class>HttpPostNewExperiment.*</class>
+            
+            <!-- Exclude assemblies by pattern -->
+            <assembly>*HttpPostNewExperiment*</assembly>
 
             <!-- Exclude files by path pattern -->
             <file>.*HttpPostNewTriggerTests\.cs</file>
+            <file>.*HttpPostNewExperiment\.cs</file>
+            <file>.*/HttpPostNewExperiment/.*</file>
           </Exclude>
           
           <!-- Exclude attributes (methods/classes marked with these) -->
