@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat code coverage">
+        <Configuration>
+          <Format>cobertura</Format>
+          <Exclude>
+            <!-- Exclude specific classes -->
+            <class>HttpTriggerPostExperimentTests.Tests</class>
+            <class>HttpTriggerPostNewExperimentTests.Tests</class>
+          </Exclude>
+          
+          <!-- Exclude attributes (methods/classes marked with these) -->
+          <ExcludeByAttribute>
+            <attribute>System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute</attribute>
+            <attribute>System.ObsoleteAttribute</attribute>
+            <attribute>System.Diagnostics.DebuggerNonUserCodeAttribute</attribute>
+          </ExcludeByAttribute>
+          
+          <!-- Exclude files by attribute -->
+          <ExcludeByFile>
+            <file>**/Migrations/**/*.cs</file>
+            <file>**/*Designer.cs</file>
+            <file>**/*.Generated.cs</file>
+            <file>**/HttpPostNewTriggerTests.cs</file>
+          </ExcludeByFile>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>
