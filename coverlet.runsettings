@@ -7,8 +7,10 @@
           <Format>cobertura</Format>
           <Exclude>
             <!-- Exclude specific classes -->
-            <class>HttpTriggerPostExperimentTests.Tests</class>
             <class>HttpTriggerPostNewExperimentTests.Tests</class>
+
+            <!-- Exclude files by path pattern -->
+            <file>.*HttpPostNewTriggerTests\.cs</file>
           </Exclude>
           
           <!-- Exclude attributes (methods/classes marked with these) -->
