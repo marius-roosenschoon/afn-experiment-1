@@ -2,11 +2,9 @@ using HttpPostExperiment;
 using HttpPostExperiment.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Newtonsoft.Json;
 using NUnit.Framework.Internal;
-using System.Net;
 using System.Text;
 
 namespace HttpTriggerPostExperimentTests
