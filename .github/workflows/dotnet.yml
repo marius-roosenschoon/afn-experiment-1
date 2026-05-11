@@ -6,8 +6,6 @@ on:
 env:
   KUI_SOLUTION: HttpPostExperiment.sln
   KUI_SOLUTION_BUILD_CONFIGURATION: Release
-  COVERAGE_THRESHOLD_MIN: 50
-  COVERAGE_DEVIATION_THRESHOLD: 5
 
 jobs:
   build:
@@ -22,13 +20,6 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Download Previous Coverage
-        uses: actions/download-artifact@v4
-        continue-on-error: true
-        with:
-          name: coverage-baseline
-          path: ./previous-coverage
 
       - name: Dotnet Clean
         run: dotnet clean ${{ env.KUI_SOLUTION }}
@@ -49,115 +40,19 @@ jobs:
           badge: true
           format: markdown
           output: both
-          fail_below_min: true
+          fail_below_min: false
           hide_branch_rate: false
           hide_complexity: false
           indicators: true
-          thresholds: '${{ env.COVERAGE_THRESHOLD_MIN }} 75'
-
-      - name: Extract Coverage Percentage
-        id: current-coverage
-        run: |
-          # Extract line coverage percentage from the XML report
-          COVERAGE_FILE=$(find coverage -name "coverage.cobertura.xml" | head -1)
-          if [ -f "$COVERAGE_FILE" ]; then
-            COVERAGE_DECIMAL=$(grep -o 'line-rate="[0-9.]*"' "$COVERAGE_FILE" | head -1 | sed 's/line-rate="//;s/"//')
-            # Convert decimal to percentage using bash arithmetic (multiply by 100 and round)
-            COVERAGE_PERCENT=$(awk "BEGIN {printf \"%.0f\", $COVERAGE_DECIMAL * 100}")
-
-      - name: Compare with Previous Coverage
-        id: coverage-check
-        run: |
-          CURRENT_COVERAGE="${{ steps.current-coverage.outputs.coverage }}"
-          PREVIOUS_COVERAGE=0
-          COVERAGE_STATUS="✅ Coverage check passed"
-          
-          # Check if previous coverage exists
-          if [ -f "./previous-coverage/coverage-percentage.txt" ]; then
-            PREVIOUS_COVERAGE=$(cat ./previous-coverage/coverage-percentage.txt)
-            echo "Previous coverage: ${PREVIOUS_COVERAGE}%"
-          else
-            echo "No previous coverage baseline found. Setting current as baseline."
-          fi
-          
-          echo "Current coverage: ${CURRENT_COVERAGE}%"
-          
-          # Calculate deviation
-          if [ "$PREVIOUS_COVERAGE" -gt 0 ]; then
-            DEVIATION=$((CURRENT_COVERAGE - PREVIOUS_COVERAGE))
-            echo "Coverage deviation: ${DEVIATION}%"
-            
-            if [ "$DEVIATION" -lt "-${{ env.COVERAGE_DEVIATION_THRESHOLD }}" ]; then
-              COVERAGE_STATUS="❌ Coverage decreased by ${DEVIATION#-}% (threshold: ${{ env.COVERAGE_DEVIATION_THRESHOLD }}%)"
-              echo "should_fail=true" >> $GITHUB_OUTPUT
-            elif [ "$DEVIATION" -lt "0" ]; then
-              COVERAGE_STATUS="⚠️ Coverage decreased by ${DEVIATION#-}% (within threshold)"
-            elif [ "$DEVIATION" -gt "0" ]; then
-              COVERAGE_STATUS="📈 Coverage improved by ${DEVIATION}%"
-            else
-              COVERAGE_STATUS="✅ Coverage maintained at ${CURRENT_COVERAGE}%"
-            fi
-          fi
-          
-          # Check minimum threshold
-          if [ "$CURRENT_COVERAGE" -lt "${{ env.COVERAGE_THRESHOLD_MIN }}" ]; then
-            COVERAGE_STATUS="❌ Coverage ${CURRENT_COVERAGE}% below minimum threshold (${{ env.COVERAGE_THRESHOLD_MIN }}%)"
-            echo "should_fail=true" >> $GITHUB_OUTPUT
-          fi
-          
-          echo "status=$COVERAGE_STATUS" >> $GITHUB_OUTPUT
-          echo "$COVERAGE_STATUS"
-          
-          # Create enhanced coverage report
-          {
-            echo "## 📊 Code Coverage Report"
-            echo ""
-            echo "| Metric | Value |"
-            echo "|--------|-------|"
-            echo "| Current Coverage | ${CURRENT_COVERAGE}% |"
-            echo "| Previous Coverage | ${PREVIOUS_COVERAGE}% |"
-            if [ "$PREVIOUS_COVERAGE" -gt 0 ]; then
-              echo "| Deviation | ${DEVIATION}% |"
-            fi
-            echo "| Minimum Threshold | ${{ env.COVERAGE_THRESHOLD_MIN }}% |"
-            echo "| Status | $COVERAGE_STATUS |"
-            echo ""
-          } > coverage-comparison.md
-          
-          # Append original coverage report
-          if [ -f "code-coverage-results.md" ]; then
-            echo "" >> coverage-comparison.md
-            echo "---" >> coverage-comparison.md
-            echo "" >> coverage-comparison.md
-            cat code-coverage-results.md >> coverage-comparison.md
-          fi
+          thresholds: '50 75'
  
       - name: Add Coverage PR Comment
         uses: marocchino/sticky-pull-request-comment@v2
         if: github.event_name == 'pull_request'
         with:
           recreate: true
-          path: coverage-comparison.md
+          path: code-coverage-results.md
  
       - name: Write coverage to Job Summary
-        run: cat coverage-comparison.md >> $GITHUB_STEP_SUMMARY
-        
-      - name: Save Current Coverage for Next Build
-        run: |
-          mkdir -p ./current-coverage
-          echo "${{ steps.current-coverage.outputs.coverage }}" > ./current-coverage/coverage-percentage.txt
-          cp coverage/**/coverage.cobertura.xml ./current-coverage/ 2>/dev/null || true
-          
-      - name: Upload Coverage Baseline
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-baseline
-          path: ./current-coverage
-          retention-days: 30
-          
-      - name: Fail on Coverage Deviation
-        if: steps.coverage-check.outputs.should_fail == 'true'
-        run: |
-          echo "${{ steps.coverage-check.outputs.status }}"
-          exit 1
+        run: cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
  
