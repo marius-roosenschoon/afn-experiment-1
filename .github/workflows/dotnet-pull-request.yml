@@ -1,0 +1,84 @@
+name: .NET Build and Test (PR)
+
+on:
+  pull_request:
+    branches:
+      - release
+      - develop
+      - main
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - '.github/workflows/dotnet.yml'
+  workflow_dispatch:
+
+env:
+  KUI_SOLUTION: HttpPostExperiment.sln
+  KUI_SOLUTION_BUILD_CONFIGURATION: Release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      name: Development
+    steps:
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Dotnet Clean
+        run: dotnet clean ${{ env.KUI_SOLUTION }}
+
+      - name: Dotnet Restore
+        run: dotnet restore ${{ env.KUI_SOLUTION }}
+
+      - name: Dotnet Build
+        run: dotnet build ${{ env.KUI_SOLUTION }} -c ${{ env.KUI_SOLUTION_BUILD_CONFIGURATION }} --no-restore
+
+      - name: Run Tests with Coverage and TRX
+        run: dotnet test ${{ env.KUI_SOLUTION }} -c ${{ env.KUI_SOLUTION_BUILD_CONFIGURATION }} --no-build --verbosity normal --collect:"XPlat Code Coverage" --logger "trx;LogFileName=test-results.trx" --results-directory ./coverage
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: .NET Tests
+          path: coverage/**/test-results.trx
+          reporter: dotnet-trx
+          fail-on-error: false
+
+      - name: Install ReportGenerator
+        run: dotnet tool install --global dotnet-reportgenerator-globaltool
+
+      - name: Merge coverage reports
+        run: |
+          mkdir -p coverage/merged
+          reportgenerator -reports:coverage/**/coverage.cobertura.xml -targetdir:coverage/merged -reporttypes:cobertura
+
+      - name: Code Coverage Summary Report
+        uses: irongut/CodeCoverageSummary@v1.3.0
+        with:
+          filename: coverage/merged/Cobertura.xml
+          badge: true
+          format: markdown
+          fail_below_min: false
+          hide_branch_rate: false
+          hide_complexity: false
+          indicators: true
+          output: file
+          thresholds: '50 75'
+
+      - name: Write coverage to Job Summary
+        # if: github.event_name != 'pull_request'
+        run: cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
+
+      - name: Add Coverage PR Comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        # if: github.event_name == 'pull_request'
+        with:
+          recreate: true
+          path: code-coverage-results.md
