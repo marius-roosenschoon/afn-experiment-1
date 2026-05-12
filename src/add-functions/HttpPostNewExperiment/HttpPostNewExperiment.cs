@@ -20,20 +20,14 @@ namespace HttpPostNewExperiment
         {
             log.LogInformation("C# HTTP trigger function is processing a request.");
 
-            string name = req.Query["name"];
-            string surname = req.Query["surname"];
-
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             dynamic data = JsonConvert.DeserializeObject(requestBody);
-            name = name ?? data?.name;
-            surname = surname ?? data?.surname;
 
-            //string responseMessage = string.IsNullOrEmpty(name)
-            //    ? "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response."
-            //    : $"Hello, {name} {surname}. This HTTP triggered function executed successfully.";
+            string jsonRequest = data.ToString();
+            log.LogInformation("Request: " + jsonRequest);
 
-            //return new OkObjectResult(responseMessage);
-
+            string name = data.firstname;
+            string surname = data.lastname;
             string fullname = name + " " + surname;
 
             Response json = new Response();
