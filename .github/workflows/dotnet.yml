@@ -30,12 +30,6 @@ jobs:
       - name: Dotnet Build
         run: dotnet build ${{ env.KUI_SOLUTION }} -c ${{ env.KUI_SOLUTION_BUILD_CONFIGURATION }} --no-restore
 
-      - name: List coverage directory
-        run: ls -la coverage || true
-
-      - name: Clean coverage directory
-        run: rm -rf coverage || true
-
       - name: Run Tests with Coverage and TRX
         run: dotnet test ${{ env.KUI_SOLUTION }} -c ${{ env.KUI_SOLUTION_BUILD_CONFIGURATION }} --no-build --verbosity normal --collect:"XPlat Code Coverage" --logger "trx;LogFileName=test-results.trx" --results-directory ./coverage
 
@@ -44,7 +38,7 @@ jobs:
         if: always()
         with:
           name: .NET Tests
-          path: coverage/test-results.trx
+          path: coverage/**/*.trx
           reporter: dotnet-trx
           fail-on-error: false
 
@@ -79,4 +73,3 @@ jobs:
         with:
           recreate: true
           path: code-coverage-results.md
-
