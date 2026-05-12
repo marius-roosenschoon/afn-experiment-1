@@ -46,13 +46,13 @@ jobs:
           output: file
           thresholds: '50 75'
 
-      - name: Add Coverage PR Comment
-        if: github.event_name == 'pull_request'
-        uses: marocchino/sticky-pull-request-comment@v2
-        with:
-          recreate: true
-          path: code-coverage-results.md
+      - name: Write coverage to Job Summary
+        if: github.event_name != 'pull_request'
+        run: cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
 
-      # - name: Write coverage to Job Summary
-      #   if: github.event_name != 'pull_request'
-      #   run: cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
+      # - name: Add Coverage PR Comment
+      #   if: github.event_name == 'pull_request'
+      #   uses: marocchino/sticky-pull-request-comment@v2
+      #   with:
+      #     recreate: true
+      #     path: code-coverage-results.md
