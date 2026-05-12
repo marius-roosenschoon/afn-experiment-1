@@ -30,6 +30,9 @@ jobs:
       - name: Dotnet Build
         run: dotnet build ${{ env.KUI_SOLUTION }} -c ${{ env.KUI_SOLUTION_BUILD_CONFIGURATION }} --no-restore
 
+      - name: List coverage directory
+        run: ls -la coverage || true
+
       - name: Clean coverage directory
         run: rm -rf coverage || true
 
