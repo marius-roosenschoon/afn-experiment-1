@@ -38,7 +38,7 @@ jobs:
         if: always()
         with:
           name: .NET Tests
-          path: coverage/**/*.trx
+          path: coverage/test-results.trx
           reporter: dotnet-trx
           fail-on-error: false
 
