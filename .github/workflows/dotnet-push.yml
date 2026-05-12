@@ -51,17 +51,25 @@ jobs:
           reporter: dotnet-trx
           fail-on-error: false
 
+      - name: Install ReportGenerator
+        run: dotnet tool install --global dotnet-reportgenerator-globaltool
+
+      - name: Merge coverage reports
+        run: |
+          mkdir -p coverage/merged
+          reportgenerator -reports:coverage/**/coverage.cobertura.xml -targetdir:coverage/merged -reporttypes:cobertura
+
       - name: Code Coverage Summary Report
         uses: irongut/CodeCoverageSummary@v1.3.0
         with:
           filename: coverage/**/coverage.cobertura.xml
           badge: true
           format: markdown
-          output: file
           fail_below_min: false
           hide_branch_rate: false
           hide_complexity: false
           indicators: true
+          output: file
           thresholds: '50 75'
 
       - name: Add Coverage Push Comment
