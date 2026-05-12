@@ -31,9 +31,16 @@ jobs:
         run: dotnet build ${{ env.KUI_SOLUTION }} -c ${{ env.KUI_SOLUTION_BUILD_CONFIGURATION }} --no-restore
 
       - name: Run Tests with Coverage and TRX
-        run: |
-          dotnet test ${{ env.KUI_SOLUTION }} -c ${{ env.KUI_SOLUTION_BUILD_CONFIGURATION }} --no-build --verbosity normal --collect:"XPlat Code Coverage" --logger "trx;LogFileName=test-results.trx" --results-directory ./coverage
+        run: dotnet test ${{ env.KUI_SOLUTION }} -c ${{ env.KUI_SOLUTION_BUILD_CONFIGURATION }} --no-build --verbosity normal --collect:"XPlat Code Coverage" --logger "trx;LogFileName=test-results.trx" --results-directory ./coverage
 
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: .NET Tests
+          path: coverage/**/*.trx
+          reporter: dotnet-trx
+          fail-on-error: false
 
       - name: Install ReportGenerator
         run: dotnet tool install --global dotnet-reportgenerator-globaltool
@@ -59,4 +66,11 @@ jobs:
       - name: Write coverage to Job Summary
         if: github.event_name != 'pull_request'
         run: cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
+
+      - name: Add Coverage PR Comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        if: github.event_name == 'pull_request'
+        with:
+          recreate: true
+          path: code-coverage-results.md
 
