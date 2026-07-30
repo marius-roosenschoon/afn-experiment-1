@@ -145,7 +145,7 @@ git checkout -b "$UAT_BRANCH_NAME"
 # Merge the new release branch into the new UAT branch
 echo "Merging $BRANCH_NAME into $UAT_BRANCH_NAME"
 PRE_MERGE_HEAD="$(git rev-parse HEAD)"
-if ! git merge "$BRANCH_NAME" --no-ff -m "Merge $BRANCH_NAME into $UAT_BRANCH_NAME"; then
+if ! git merge "$BRANCH_NAME" --no-ff -m "Merge '$BRANCH_NAME' into '$UAT_BRANCH_NAME'"; then
   echo_space
   echo "ERROR: Merge failed. Please resolve conflicts and try again."
   echo_space
@@ -169,7 +169,7 @@ if [ "$PRE_MERGE_HEAD" = "$POST_MERGE_HEAD" ]; then
 fi
 
 echo_space
-echo "New UAT branch '$UAT_BRANCH_NAME' created successfully and merged with $BRANCH_NAME branch."
+echo "New UAT branch '$UAT_BRANCH_NAME' created successfully and merged with '$BRANCH_NAME' branch."
 echo_space
 
 # ----- Push branches to origin -----
@@ -177,7 +177,7 @@ echo_space
 echo "Pushing branches to the remote repository..."
 
 # Push the new release branch to the remote repository
-echo Pushing the new release branch '$BRANCH_NAME' to the remote repository...
+echo "Pushing the new release branch '$BRANCH_NAME' to the remote repository..."
 if ! git push origin "$BRANCH_NAME"; then
   echo_space
   echo "ERROR: Failed to push the new release branch '$BRANCH_NAME' to the remote repository. Please check your network connection and remote repository settings."
@@ -188,7 +188,7 @@ if ! git push origin "$BRANCH_NAME"; then
 fi
 
 # Push the new UAT branch to the remote repository
-echo Pushing the new UAT branch '$UAT_BRANCH_NAME' to the remote repository...
+echo "Pushing the new UAT branch '$UAT_BRANCH_NAME' to the remote repository..."
 if ! git push origin "$UAT_BRANCH_NAME"; then
   echo_space
   echo "ERROR: Failed to push the new UAT branch '$UAT_BRANCH_NAME' to the remote repository. Please check your network connection and remote repository settings."
