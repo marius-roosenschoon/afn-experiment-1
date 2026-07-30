@@ -201,14 +201,17 @@ if ! git push origin "$UAT_BRANCH_NAME"; then
 fi
 
 # ----- Final instructions -----
+git checkout develop
+echo_space
+
 echo "+--------------------+"
 echo "| Final Instructions |"
 echo "+--------------------+"
 
 echo_space
-echo "Create a pull request to merge the new release branch '$BRANCH_NAME' into release using the GitHub web interface."
+echo "Create a pull request to merge the new release branch '$BRANCH_NAME' into 'RELEASE' using the GitHub web interface."
 echo_space
-echo "Create a pull request to merge the new UAT branch '$UAT_BRANCH_NAME' into uat using the GitHub web interface."
+echo "Create a pull request to merge the new UAT branch '$UAT_BRANCH_NAME' into 'UAT' using the GitHub web interface."
 echo_space
 exit 0
 
