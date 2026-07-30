@@ -52,6 +52,11 @@ UAT_BRANCH_NAME="newrelease/${TASK_NUMBER}_merge_release_uat_${DATESTAMP}"
 echo_space
 echo "Initial preparation..."
 
+# Pull the latest changes from the develop branch
+echo "Pulling the latest changes from the develop branch..."
+git checkout develop
+git pull origin develop
+
 #Pull the latest changes from the remote repository
 echo "Fetching the latest changes from the remote repository..."
 git fetch origin
@@ -74,11 +79,6 @@ if git show-ref --verify --quiet "refs/heads/$UAT_BRANCH_NAME"; then
   git checkout develop
   exit 3
 fi
-
-# Pull the latest changes from the develop branch
-echo "Pulling the latest changes from the develop branch..."
-git checkout develop
-git pull origin develop
 
 # ----- Release branch preparation -----
 unset PRE_MERGE_HEAD
@@ -153,7 +153,7 @@ if ! git merge "$BRANCH_NAME" --no-ff -m "Merge '$BRANCH_NAME' into '$UAT_BRANCH
   git checkout develop
   git branch -D "$UAT_BRANCH_NAME"
   echo_space
-  exit 7
+  exit 6
 fi
 
 # Check if there were changes merged into the new UAT branch
@@ -165,7 +165,7 @@ if [ "$PRE_MERGE_HEAD" = "$POST_MERGE_HEAD" ]; then
   echo_space
   git checkout develop
   git branch -D "$UAT_BRANCH_NAME"
-  exit 8
+  exit 7
 fi
 
 echo_space
@@ -185,7 +185,7 @@ if ! git push origin "$BRANCH_NAME"; then
   echo_space
   git checkout develop
   git branch -D "$BRANCH_NAME"
-  exit 6
+  exit 8
 fi
 
 # Push the new UAT branch to the remote repository
