@@ -177,6 +177,7 @@ echo_space
 echo "Pushing branches to the remote repository..."
 
 # Push the new release branch to the remote repository
+echo_space
 echo "Pushing the new release branch '$BRANCH_NAME' to the remote repository..."
 if ! git push origin "$BRANCH_NAME"; then
   echo_space
@@ -188,6 +189,7 @@ if ! git push origin "$BRANCH_NAME"; then
 fi
 
 # Push the new UAT branch to the remote repository
+echo_space
 echo "Pushing the new UAT branch '$UAT_BRANCH_NAME' to the remote repository..."
 if ! git push origin "$UAT_BRANCH_NAME"; then
   echo_space
@@ -199,6 +201,10 @@ if ! git push origin "$UAT_BRANCH_NAME"; then
 fi
 
 # ----- Final instructions -----
+echo "+--------------------+"
+echo "| Final Instructions |"
+echo "+--------------------+"
+
 echo_space
 echo "Create a pull request to merge the new release branch '$BRANCH_NAME' into release using the GitHub web interface."
 echo_space
